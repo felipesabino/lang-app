@@ -57,21 +57,20 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = forwardRef(({ audioSrc, t
 
   return (
     <div className="fixed bottom-0 h-12 w-full flex items-center justify-center bg-white border-t-2 border-gray-300">
-      <a href="#" onClick={backward}><BackwardIcon className='h-6 w-6 text-blue-500'/></a>
+      <a href="#" onClick={backward}><BackwardIcon className='h-6 w-6 text-pink-300'/></a>
       <a href="#" onClick={play}><PlayIcon className={classNames({
         'h-6 w-6': true,
-        'text-blue-500': audio?.paused,
+        'text-pink-300': audio?.paused,
         'text-gray-300': !audio?.paused
       })}/></a>
       <a href='#' onClick={pause}><PauseIcon className={classNames({
         'h-6 w-6': true,
-        'text-blue-500': !audio?.paused,
+        'text-pink-300': !audio?.paused,
         'text-gray-300': audio?.paused
       })}/></a>
-      <a href='#' onClick={forward}><ForwardIcon className='h-6 w-6 text-blue-500'/></a>
-      <p>Duration: {audioDuration.toFixed(2)} seconds</p>
-      <div style={{ position: 'absolute', bottom: 0, width: '100%', height: '5px', backgroundColor: 'black' }}>
-        <div style={{ width: `${progressPercentage}%`, height: '100%', backgroundColor: 'red' }}></div>
+      <a href='#' onClick={forward}><ForwardIcon className='h-6 w-6 text-pink-300'/></a>
+      <div className='absolute bottom-0 w-full h-1.5 bg-black'>
+        <div className='h-full bg-pink-300' style={{ width: `${progressPercentage}%`}}></div>
       </div>
     </div>
   );

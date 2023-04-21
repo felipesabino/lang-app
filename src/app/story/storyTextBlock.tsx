@@ -43,8 +43,8 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = (({ story }) => {
   };
 
   return (
-    <div className="columns-2 gap-10 p-8 bg-slate-50 rounded-xl  dark:bg-slate-800/25">
-      <div className="overflow-auto">
+    <div className="columns-2 gap-8 p-4 mb-16">
+      <div className="overflow-auto p-8 bg-slate-50 rounded-xl  dark:bg-slate-800/25 mb-8 divide-y divide-dashed">
        {toRender.map((item, index) =>
           <div key={"p-" + index}>
             <TextSelectionObserver onButtonClick={onButtonClick} >
@@ -52,7 +52,7 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = (({ story }) => {
                 {item.text}
               </p>
             </TextSelectionObserver>
-            <details className=" ">
+            <details className="pb-2">
               <summary className="text-sm leading-6 text-slate-900 dark:text-white font-semibold select-none hover:cursor-help">Translation</summary>
               <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400 italic">
                 {item.translation}
@@ -61,10 +61,8 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = (({ story }) => {
           </div>
         )}
       </div>
-      <div>
+      <div className=" overflow-auto p-8 bg-slate-50 rounded-xl  dark:bg-slate-800/25 mb-8">
         <div className={classNames({
-          'pt-4': true,
-          'px-8': true,
           'hidden': selectedText.length > 0,
         })}>
           <p className="text-gray-800 dark:text-gray-400">
@@ -73,7 +71,6 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = (({ story }) => {
         </div>
         <div className={classNames({
           'pt-4': true,
-          'px-8': true,
           'hidden': selectedText.length === 0,
         })}>
           <p className="text-gray-800 dark:text-gray-400">
@@ -82,7 +79,6 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = (({ story }) => {
         </div>
         <div className={classNames({
           'pt-4': true,
-          'px-8': true,
           'hidden': !textExplanationIsLoading,
           'animate-pulse': true,
         })}>
@@ -91,12 +87,11 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = (({ story }) => {
           </p>
         </div>
         <div className={classNames({
-          'pt-4 px-8 text-gray-800 dark:text-gray-400': true,
-          'px-8': true,
+          'pt-4 text-gray-800 dark:text-gray-400': true,
           'hidden': textExplanationIsLoading,
         })}>
             {textExplanation.explanation.split("\n").map((paragraph, index) =>
-              <p key={index}>{paragraph}</p>
+              <p className="pt-2" key={index}>{paragraph}</p>
             )}
       </div>
     </div>
