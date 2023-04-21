@@ -11,9 +11,6 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
 
-  // @ts-ignore
-  import('preline')
-
   return (
     <html lang="en">
       <body className='selection:bg-pink-300'>{children}</body>
