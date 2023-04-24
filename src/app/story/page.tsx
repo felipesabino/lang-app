@@ -1,15 +1,15 @@
 import React from "react";
 import { AudioPlayer } from "../components/AudioPlayer";
 import { Story, StoryTextBlock } from "./storyTextBlock";
+import { StoryPageClientSide } from "./StoryPageClientSide";
 
 export default async function StoryPage() {
   const story = await getData();
 
   return (
-    <div className="">
-      <StoryTextBlock story={story} />
-      <AudioPlayer audioSrc={story.audio} />
-    </div>
+    <>
+      <StoryPageClientSide story={story} />
+    </>
   );
 };
 

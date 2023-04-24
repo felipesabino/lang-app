@@ -6,7 +6,7 @@ import classNames from 'classnames';
 
 interface AudioPlayerProps {
   audioSrc: string;
-  timeUpdated?: (timeInMilliSeconds: number) => void;
+  timeUpdated?: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export const AudioPlayer: React.FC<AudioPlayerProps> = forwardRef(({ audioSrc, timeUpdated }, ref) => {

@@ -18,7 +18,7 @@ export const TextSelectionObserver: React.FC<TextSelectionObserverProps> = ({
   children,
   onButtonClick,
 }) => {
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [ref, setRef] = useState<HTMLElement>()
 
   const handleClick = (selectedText: string) => {
     const selection = window.getSelection();
@@ -31,15 +31,17 @@ export const TextSelectionObserver: React.FC<TextSelectionObserverProps> = ({
 
   return (
     <div>
-      <div ref={containerRef}>
+      <div ref={(el) => el != null && setRef(el)}>
         {children}
       </div>
-
       <Popover
-        target={containerRef.current as HTMLElement}
+        target={ref}
         render={
           ({ clientRect, isCollapsed, textContent }) => {
-            if (clientRect == null || isCollapsed) return null
+            if (clientRect == null || isCollapsed || !ref) return null
+
+            console.log(clientRect, isCollapsed, ref, textContent);
+
             const leftPosition = Math.floor(clientRect.left + clientRect.width / 2) + 'px';
             const topPosition = (clientRect.top - 55 + window.scrollY) + 'px';
 
@@ -59,6 +61,6 @@ export const TextSelectionObserver: React.FC<TextSelectionObserverProps> = ({
             </div>
           }
         } />
-    </div>
+      </div>
   );
 };
