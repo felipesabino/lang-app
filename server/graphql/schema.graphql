@@ -1,0 +1,9 @@
+type Story {
+  id: ID!
+  title: String!
+  text: String!
+}
+
+type Query {
+  getStoryById(storyId: ID!): Story
+}
