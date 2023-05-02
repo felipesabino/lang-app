@@ -1,0 +1,59 @@
+{
+  "configurations": [
+    {
+      "type": "aws-sam",
+      "request": "direct-invoke",
+      "name": "server:resources/story-status.handler (nodejs18.x)",
+      "invokeTarget": {
+        "target": "code",
+        "projectRoot": "${workspaceFolder}/server",
+        "lambdaHandler": "./resources/story-status.handler",
+      },
+      "lambda": {
+        "runtime": "nodejs18.x",
+        "payload": {
+          "json": {
+            "arguments": {
+              "storyId": "1724961a-b49f-47fa-8a85-7c64d3a4cce6"
+            }
+          }
+        },
+        "environmentVariables": {
+          "STORY_TABLE": "Story"
+        }
+      }
+    },
+    {
+      "type": "aws-sam",
+      "request": "direct-invoke",
+      "name": "server:resources/story-create.handler (nodejs18.x)",
+      "invokeTarget": {
+        "target": "code",
+        "projectRoot": "${workspaceFolder}/server",
+        "lambdaHandler": "./resources/story-create.handler",
+      },
+      "lambda": {
+        "runtime": "nodejs18.x",
+        "payload": {
+          "json": {
+            "arguments": {
+              "story": {
+                "gramarOptions": "PASTTENSE",
+                "theme": "RANDOM",
+                "language": {
+                  "source": "ENGLISH",
+                  "target": "ITALIAN"
+                },
+                "narrationStyle": "RANDOM",
+                "specificWords": ["word", "another"]
+              }
+            }
+          }
+        },
+        "environmentVariables": {
+          "STORY_TABLE": "Story"
+        }
+      }
+    }
+  ]
+}

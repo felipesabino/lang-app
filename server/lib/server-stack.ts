@@ -38,20 +38,6 @@ export class ServerStack extends Stack {
       value: this.region
     });
 
-    const lambdaStoryCreate = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryCreate", {
-      runtime: Lambda.Runtime.NODEJS_18_X,
-      entry: "resources/story-create.ts",
-      handler: "handler",
-      depsLockFilePath: 'yarn.lock',
-    });
-
-    const lamdaDataSource = api.addLambdaDataSource('LambdaStoryCreateDataSource', lambdaStoryCreate);
-
-    lamdaDataSource.createResolver('Mutation-CreateStory', {
-      typeName: 'Mutation',
-      fieldName: 'createStory'
-    });
-
     const storyDynamoDbTable = new DynamoDB.Table(this, 'Story', {
       tableName: 'Story',
       billingMode: DynamoDB.BillingMode.PAY_PER_REQUEST,
@@ -61,7 +47,41 @@ export class ServerStack extends Stack {
       },
     });
 
+    const lambdaStoryCreate = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryCreate", {
+      runtime: Lambda.Runtime.NODEJS_18_X,
+      entry: "resources/story-create.ts",
+      handler: "handler",
+      depsLockFilePath: 'yarn.lock',
+      environment: {
+        STORY_TABLE: storyDynamoDbTable.tableName
+      }
+    });
+
+    const lambdaStoryStatus = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryStatus", {
+      runtime: Lambda.Runtime.NODEJS_18_X,
+      entry: "resources/story-status.ts",
+      handler: "handler",
+      depsLockFilePath: 'yarn.lock',
+      environment: {
+        STORY_TABLE: storyDynamoDbTable.tableName
+      }
+    });
+
+    const lamdaStoryCreateDataSource = api.addLambdaDataSource('LambdaStoryCreateDataSource', lambdaStoryCreate);
+    lamdaStoryCreateDataSource.createResolver('Mutation-CreateStory', {
+      typeName: 'Mutation',
+      fieldName: 'createStory'
+    });
+
+    const lamdaStoryStatusDataSource = api.addLambdaDataSource('LambdaStoryStatusDataSource', lambdaStoryStatus);
+    lamdaStoryStatusDataSource.createResolver('Query-GetStoryStatus', {
+      typeName: 'Query',
+      fieldName: 'getStoryStatus'
+    });
+
+    storyDynamoDbTable.grantReadData(lambdaStoryStatus);
     storyDynamoDbTable.grantFullAccess(lambdaStoryCreate)
+
 
   }
 }
