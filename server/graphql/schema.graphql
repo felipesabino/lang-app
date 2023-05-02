@@ -1,9 +1,136 @@
-type Story {
-  id: ID!
-  title: String!
+scalar AWSDate
+scalar AWSTime
+scalar AWSDateTime
+scalar AWSTimestamp
+scalar AWSEmail
+scalar AWSJSON
+scalar AWSURL
+scalar AWSPhone
+scalar AWSIPAddress
+
+enum StoryStatusType {
+  GENERATING
+  COMPLETED
+}
+
+type StoryStatus {
+  storyId: ID!
+  status: StoryStatusType!
+  generationRequestDate: AWSTimestamp!
+  lastUpdate: AWSTimestamp!
+}
+
+enum StoryTheme {
+  RANDOM
+  ADVENTURE
+  ROMANCE
+  FANTASY
+  SCIFI
+  DRAMA
+  YOUNGADULT
+  CHILDREN
+}
+
+enum SupportedLanguages {
+  ENGLISH
+  PORTUGUESE
+  ITALIAN
+  FRENCH
+}
+
+enum NarrativeStyle {
+  RANDOM
+  FIRSTPERSON
+  THIRDPERSON
+  LETTER
+}
+
+enum GrammarOptions {
+  PASTTENSE
+  PRESENTTENSE
+  FUTURETENSE
+  PASTCONTINUOUS
+  PRESENTCONTINUOUS
+  FUTURECONTINUOUS
+}
+
+type LanguageOutput {
+  source: SupportedLanguages!
+  target: SupportedLanguages!
+}
+
+input LanguageInput {
+  source: SupportedLanguages!
+  target: SupportedLanguages!
+}
+
+interface StoryOptions {
+  theme: StoryTheme!
+  language: LanguageOutput!
+  narrationStyle: NarrativeStyle!
+  gramarOptions: [GrammarOptions!]!
+  specificWords: [String!]!
+}
+
+type StoryCreationMetadata implements StoryOptions {
+  theme: StoryTheme!
+  language: LanguageOutput!
+  narrationStyle: NarrativeStyle!
+  gramarOptions: [GrammarOptions!]!
+  specificWords: [String!]!
+}
+
+enum AudioSpeed {
+  SLOW
+  NORMAL
+}
+
+type SpeechMark {
+  time: Int!
+  type: String!
+  start: Int!
+  end: Int!
+  value: String!
+}
+
+type StoryAudioAsset {
+  url: AWSURL!
+  speed: AudioSpeed!
+  speechMarks: SpeechMark!
+}
+
+type StoryAssets {
   text: String!
+  translation: String!
+  audio: [StoryAudioAsset!]!
+}
+
+type Story {
+  storyId: ID!
+  creationMetadata: StoryCreationMetadata!
+  generationRequestDate: AWSTimestamp!
+  lastUpdate: AWSTimestamp!
+  status: StoryStatusType!
+  assets: StoryAssets!
 }
 
 type Query {
   getStoryById(storyId: ID!): Story
+  getStoryStatus(storyId: ID!): StoryStatus
+}
+
+input CreateStoryInput {
+  theme: StoryTheme!
+  language: LanguageInput!
+  narrationStyle: NarrativeStyle!
+  gramarOptions: [GrammarOptions!]!
+  specificWords: [String!]!
+}
+
+type CreateStoryOutput {
+  storyId: ID!
+}
+
+type Mutation {
+  createStory(story: CreateStoryInput!): CreateStoryOutput!
 }

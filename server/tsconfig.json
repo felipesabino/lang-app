@@ -3,7 +3,8 @@
     "target": "ES2020",
     "module": "commonjs",
     "lib": [
-      "es2020"
+      "es2020",
+      "dom"
     ],
     "declaration": true,
     "strict": true,
@@ -18,13 +19,22 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "strictPropertyInitialization": false,
     "typeRoots": [
-      "./node_modules/@types"
-    ]
+      "./node_modules/@types",
+      "./node_modules/@aws-sdk",
+      "./node_modules/@nova-odm"
+    ],
   },
   "exclude": [
     "node_modules",
-    "cdk.out"
+    "cdk.out",
+    "node_modules/@aws-sdk/**/*"
+  ],
+  "include": [
+    "bin/**/*.ts",
+    "lib/**/*.ts",
+    "resources/**/*.ts"
   ]
 }

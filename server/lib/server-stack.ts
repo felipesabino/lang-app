@@ -3,7 +3,7 @@ import { Construct } from 'constructs';
 import * as AppSync from 'aws-cdk-lib/aws-appsync';
 import * as LambdaNodeJs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as Lambda from 'aws-cdk-lib/aws-lambda';
-import * as S3 from 'aws-cdk-lib/aws-s3';
+import * as DynamoDB from 'aws-cdk-lib/aws-dynamodb';
 
 export class ServerStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -38,26 +38,30 @@ export class ServerStack extends Stack {
       value: this.region
     });
 
-    const bucket = new S3.Bucket(this, "Store");
-
-    const handler = new LambdaNodeJs.NodejsFunction(this, "Handler", {
+    const lambdaStoryCreate = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryCreate", {
       runtime: Lambda.Runtime.NODEJS_18_X,
-      entry: "resources/lambda.ts",
+      entry: "resources/story-create.ts",
       handler: "handler",
       depsLockFilePath: 'yarn.lock',
-      environment: {
-        BUCKET: bucket.bucketName
-      }
     });
 
-    bucket.grantReadWrite(handler);
+    const lamdaDataSource = api.addLambdaDataSource('LambdaStoryCreateDataSource', lambdaStoryCreate);
 
-    const lamdaDataSource = api.addLambdaDataSource('lambdaDataSource', handler);
-
-    lamdaDataSource.createResolver('getStoryById', {
-      typeName: 'Query',
-      fieldName: 'getStoryById'
+    lamdaDataSource.createResolver('Mutation-CreateStory', {
+      typeName: 'Mutation',
+      fieldName: 'createStory'
     });
+
+    const storyDynamoDbTable = new DynamoDB.Table(this, 'Story', {
+      tableName: 'Story',
+      billingMode: DynamoDB.BillingMode.PAY_PER_REQUEST,
+      partitionKey: {
+        name: 'storyId',
+        type: DynamoDB.AttributeType.STRING,
+      },
+    });
+
+    storyDynamoDbTable.grantFullAccess(lambdaStoryCreate)
 
   }
 }
