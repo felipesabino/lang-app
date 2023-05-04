@@ -3,14 +3,19 @@ import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { v4 as uuidV4 } from 'uuid';
 import { CreateStoryOutput, CreateStoryInput, StoryStatusType } from './model/graphql-schema'
 import { Story } from './model/story-dynamodb';
+import * as AWS from 'aws-sdk';
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const sfn = new AWS.StepFunctions({});
 
-
-export async function handler(event: any, context: any) : Promise<CreateStoryOutput> {
+export const handler = async (event: any): Promise<CreateStoryOutput> => {
   try {
 
     const TABLE_NAME = process.env.STORY_TABLE;
+    if (!TABLE_NAME) { throw new Error('TABLE_NAME not defined'); }
+
+    const STATE_MACHINE_ARN = process.env.STATE_MACHINE_ARN;
+    if (!STATE_MACHINE_ARN) { throw new Error('STATE_MACHINE_ARN not defined'); }
 
     const storyId = uuidV4();
     const metadata = event.arguments.story as CreateStoryInput;
@@ -26,11 +31,23 @@ export async function handler(event: any, context: any) : Promise<CreateStoryOut
       } satisfies Story
     }));
 
-    //TODO: trigger step functions to generate story assets
+    return new Promise<void>((resolve, reject) => {
+      sfn.startExecution({
+        stateMachineArn: STATE_MACHINE_ARN,
+        input: JSON.stringify({ storyId }),
+      }, (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      })
+    }).then(() => {
+      return {
+        storyId,
+      }
+    });
 
-    return {
-      storyId,
-    }
   } catch (error) {
     console.log(error);
     throw error;

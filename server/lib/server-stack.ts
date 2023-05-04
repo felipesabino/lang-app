@@ -4,6 +4,8 @@ import * as AppSync from 'aws-cdk-lib/aws-appsync';
 import * as LambdaNodeJs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as Lambda from 'aws-cdk-lib/aws-lambda';
 import * as DynamoDB from 'aws-cdk-lib/aws-dynamodb';
+import * as StepFunction from 'aws-cdk-lib/aws-stepfunctions';
+import * as StepFunctionTasks from 'aws-cdk-lib/aws-stepfunctions-tasks';
 
 export class ServerStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -80,8 +82,46 @@ export class ServerStack extends Stack {
     });
 
     storyDynamoDbTable.grantReadData(lambdaStoryStatus);
-    storyDynamoDbTable.grantFullAccess(lambdaStoryCreate)
+    storyDynamoDbTable.grantFullAccess(lambdaStoryCreate);
 
 
+    const openCase = new StepFunctionTasks.DynamoGetItem(this, 'OpenCase', {
+      table: storyDynamoDbTable,
+      key: {
+        storyId: StepFunctionTasks.DynamoAttributeValue.fromString(
+          StepFunction.JsonPath.stringAt('$.storyId'))
+        },
+      projectionExpression: [
+        new StepFunctionTasks.DynamoProjectionExpression().withAttribute('storyId'),
+        new StepFunctionTasks.DynamoProjectionExpression().withAttribute('creationMetadata'),
+      ],
+      outputPath: '$.Item',
+    });
+
+    const lambdaChainEnd = new LambdaNodeJs.NodejsFunction(this, "LambdaChainEnd", {
+      runtime: Lambda.Runtime.NODEJS_18_X,
+      entry: "resources/workflow-log-dynamo.ts",
+      handler: "handler",
+      depsLockFilePath: 'yarn.lock',
+    });
+    const lambdaChainEndTask = new StepFunctionTasks.LambdaInvoke(this, 'LambdaInvokeLambdaChainEnd', {
+      lambdaFunction: lambdaChainEnd,
+      outputPath: '$.Payload',
+    });
+
+    const chain = StepFunction.Chain.start(openCase)
+      .next(lambdaChainEndTask)
+      .next(
+        new StepFunction.Choice(this, 'Is it ok?')
+          .when(StepFunction.Condition.stringEquals('$.status', 'OK'), new StepFunction.Succeed(this, 'Succeed'))
+          .otherwise(new StepFunction.Fail(this, 'Fail'))
+      );
+
+    const stateMachine = new StepFunction.StateMachine(this, "StateMachine", {
+      definition: chain,
+    })
+
+    stateMachine.grantStartExecution(lambdaStoryCreate);
+    lambdaStoryCreate.addEnvironment('STATE_MACHINE_ARN', stateMachine.stateMachineArn)
   }
 }

@@ -43,6 +43,7 @@ enum NarrativeStyle {
   FIRSTPERSON
   THIRDPERSON
   LETTER
+  NEWYORKER
 }
 
 enum GrammarOptions {

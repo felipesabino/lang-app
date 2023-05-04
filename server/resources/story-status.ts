@@ -4,7 +4,7 @@ import { QueryGetStoryByIdArgs, StoryStatus } from './model/graphql-schema'
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
-export async function handler(event: any, context: any) : Promise<StoryStatus> {
+export const handler = async (event: any): Promise<StoryStatus> => {
   try {
 
     const TABLE_NAME = process.env.STORY_TABLE;
