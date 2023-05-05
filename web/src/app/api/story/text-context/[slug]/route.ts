@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { getAnswer } from './openai';
 
 export interface TextContext {
   text: string;
@@ -12,6 +11,8 @@ export async function GET(request: Request, context: { params:  { slug: string  
   //   text: context.params.slug,
   //   explanation: aiResponse,
   // });
+
+  //TODO: Add to GraphQL API
 
   return NextResponse.json({
     text: context.params.slug,

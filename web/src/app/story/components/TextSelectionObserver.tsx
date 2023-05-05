@@ -1,7 +1,6 @@
 import { QuestionMarkCircleIcon } from '@heroicons/react/24/solid';
 import React, { useEffect, useState, useRef } from 'react';
-import { Popover } from 'react-text-selection-popover'
-
+import dynamic from 'next/dynamic';
 
 export interface SelectionInfo {
   selectedText: string;
@@ -13,6 +12,10 @@ interface TextSelectionObserverProps {
   children: React.ReactNode;
   onButtonClick?: (selectionInfo: SelectionInfo) => void;
 }
+
+const DynamicPopOver = dynamic(() =>
+  import('react-text-selection-popover').then((mod) => mod.Popover)
+)
 
 export const TextSelectionObserver: React.FC<TextSelectionObserverProps> = ({
   children,
@@ -34,7 +37,8 @@ export const TextSelectionObserver: React.FC<TextSelectionObserverProps> = ({
       <div ref={(el) => el != null && setRef(el)}>
         {children}
       </div>
-      <Popover
+      <DynamicPopOver
+        mount={ref}
         target={ref}
         render={
           ({ clientRect, isCollapsed, textContent }) => {

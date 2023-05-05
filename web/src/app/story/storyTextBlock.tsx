@@ -1,10 +1,10 @@
 "use client"
 
-import { TextSelectionObserver, SelectionInfo } from "../components/TextSelectionObserver";
+import { TextSelectionObserver, SelectionInfo } from "./components/TextSelectionObserver";
 import { useState } from "react";
 import classNames from 'classnames'
 import { TextContext } from "../api/story/text-context/[slug]/route";
-import { Paragraph, ParagraphSplitter } from "../components/ParagraphSpitter";
+import { Paragraph, ParagraphSplitter } from "./components/ParagraphSpitter";
 
 interface Mark {
   type: 'word' | 'sentence',
@@ -121,7 +121,7 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = (({ story, timeElap
           'hidden': selectedText.length === 0,
         })}>
           <p className="text-gray-800">
-            Selected text: "{selectedText}"
+            Selected text: &quot;{selectedText}&quot;
           </p>
         </div>
         <div className={classNames({

@@ -1,9 +1,9 @@
 "use client";
 
-export default function Home() {
+export default function Waiting() {
   return (
     <div className='grid gap-4 place-content-center h-screen w-full'>
-      Loading your stories...
+      Generating your story...
     </div>
   );
 }

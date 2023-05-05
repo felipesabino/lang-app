@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react";
-import { AudioPlayer } from "../components/AudioPlayer";
+import { AudioPlayer } from "./components/AudioPlayer";
 import { Story, StoryTextBlock, StoryTextBlockProps } from "./storyTextBlock";
 
 export interface StoryPageClientSideProps {

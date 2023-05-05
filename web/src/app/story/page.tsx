@@ -1,5 +1,5 @@
 import React from "react";
-import { AudioPlayer } from "../components/AudioPlayer";
+import { AudioPlayer } from "./components/AudioPlayer";
 import { Story, StoryTextBlock } from "./storyTextBlock";
 import { StoryPageClientSide } from "./StoryPageClientSide";
 
@@ -13,7 +13,7 @@ export default async function StoryPage() {
   );
 };
 
-export async function getData(): Promise<Story> {
+async function getData(): Promise<Story> {
   try {
     const textResponse = await new Promise<Response>((resolve) => {
       setTimeout(() => {
