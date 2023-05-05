@@ -1,83 +1,75 @@
-import { XMarkIcon } from '@heroicons/react/20/solid';
+"use client"
 
-export default async function NewStoryPage() {
+//@ts-ignore
+import { registerCoreBlocks } from "@quillforms/react-renderer-utils";
+import { Form, useFieldAnswer} from "@quillforms/renderer-core";
+import "@quillforms/renderer-core/build-style/style.css";
+import { redirect } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { getFormSteps, FormStepsProps } from "./components/form-steps";
+
+registerCoreBlocks();
+
+const NewStoryForm = () => {
+
+  const [formCompleted, setFormCompleted] = useState(false);
+  const shouldStoryBeCustomized= useFieldAnswer("story-customized");
+
+  useEffect(() => {
+    if (formCompleted) {
+      redirect('/story');
+    }
+  });
 
   return (
-    <div className="grid gap-4 place-content-center h-screen w-full	">
-      <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-96">
-        <div>
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="theme">
-            Theme
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="theme"
-            type="text"
-            placeholder="Adventure, Romance, Sci-fi, ..."
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="language">
-            Language
-          </label>
-          <select
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="language"
-          >
-            <option value="italian">Italian</option>
-            <option value="portuguese">Portuguese</option>
-            <option value="english">English</option>
-            <option value="french">French</option>
-          </select>
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="narrative-style">
-            Narrative Style
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="narrative-style"
-            type="text"
-            placeholder="First Person, Third Person, Epistolary, ..."
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="grammar-options">
-            Grammar Options
-          </label>
-          <select
-            multiple
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="grammar-options"
-          >
-            <option value="past">Past Tense</option>
-            <option value="present">Present Tense</option>
-            <option value="future">Future Tense</option>
-            <option value="past-continuous">Past Continuous</option>
-            <option value="present-continuous">Present Continuous</option>
-            <option value="future-continuous">Future Continuous</option>
-          </select>
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="specific-words">
-            Specific Words
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="specific-words"
-            type="text"
-            placeholder="First Person, Third Person, Epistolary, ..."
-          />
-        </div>
-        <div className="flex items-center justify-between">
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit"
-          >
-            Create Story
-          </button>
-        </div>
-      </div>
+    <div style={{ width: "100%", height: "100vh" }}>
+      <Form
+        formId={1}
+        formObj={{
+          hiddenFields: {},
+          blocks: getFormSteps({
+            //@ts-ignore
+            shouldStoryBeCustomized: shouldStoryBeCustomized?.includes("Yes"),
+          }),
+          settings: {
+            animationDirection: "horizontal",
+            disableWheelSwiping: false,
+            disableNavigationArrows: false,
+            disableProgressBar: false
+          },
+          theme: {
+            font: "Roboto",
+            buttonsBgColor: "#9b51e0",
+            logo: {
+              src: ""
+            },
+            questionsColor: "#000",
+            answersColor: "#0aa7c2",
+            buttonsFontColor: "#fff",
+            buttonsBorderRadius: 25,
+            errorsFontColor: "#fff",
+            errorsBgColor: "#f00",
+            progressBarFillColor: "#000",
+            progressBarBgColor: "#ccc"
+          },
+          messages: {
+            "block.defaultThankYouScreen.label":
+              "Please wait while we generate your story!"
+          }
+        }}
+        applyLogic={false}
+        isPreview={false}
+        onSubmit={(data, { completeForm, setIsSubmitting }) => {
+          setTimeout(() => {
+            setIsSubmitting(false);
+            completeForm();
+            console.log(data);
+            setFormCompleted(true);
+          }, 500);
+        }}
+      />
     </div>
   );
 };
+
+export default NewStoryForm;
