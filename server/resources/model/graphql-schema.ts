@@ -72,6 +72,7 @@ export type MutationCreateStoryArgs = {
 export enum NarrativeStyle {
   Firstperson = 'FIRSTPERSON',
   Letter = 'LETTER',
+  Newyorker = 'NEWYORKER',
   Random = 'RANDOM',
   Thirdperson = 'THIRDPERSON'
 }
@@ -167,8 +168,8 @@ export enum StoryTheme {
 }
 
 export enum SupportedLanguages {
-  English = 'ENGLISH',
-  French = 'FRENCH',
-  Italian = 'ITALIAN',
-  Portuguese = 'PORTUGUESE'
+  En = 'en',
+  Fr = 'fr',
+  It = 'it',
+  Pt = 'pt'
 }

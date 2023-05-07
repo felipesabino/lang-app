@@ -1,16 +1,21 @@
-import { App, Stack, StackProps, Expiration, Duration, CfnOutput } from 'aws-cdk-lib';
+import { Stack, StackProps, Expiration, Duration, CfnOutput } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as AppSync from 'aws-cdk-lib/aws-appsync';
 import * as LambdaNodeJs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as Lambda from 'aws-cdk-lib/aws-lambda';
 import * as DynamoDB from 'aws-cdk-lib/aws-dynamodb';
+import * as S3 from 'aws-cdk-lib/aws-s3'
 import * as StepFunction from 'aws-cdk-lib/aws-stepfunctions';
 import * as StepFunctionTasks from 'aws-cdk-lib/aws-stepfunctions-tasks';
+import * as IAM from 'aws-cdk-lib/aws-iam';
 
 export class ServerStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
+    /*
+      API
+    */
     const api = new AppSync.GraphqlApi(this, 'Api', {
       name: 'appsync-api',
       schema: AppSync.SchemaFile.fromAsset('graphql/schema.graphql'),
@@ -40,7 +45,7 @@ export class ServerStack extends Stack {
       value: this.region
     });
 
-    const storyDynamoDbTable = new DynamoDB.Table(this, 'Story', {
+    const dynamoDbTableStory = new DynamoDB.Table(this, 'Story', {
       tableName: 'Story',
       billingMode: DynamoDB.BillingMode.PAY_PER_REQUEST,
       partitionKey: {
@@ -55,7 +60,7 @@ export class ServerStack extends Stack {
       handler: "handler",
       depsLockFilePath: 'yarn.lock',
       environment: {
-        STORY_TABLE: storyDynamoDbTable.tableName
+        STORY_TABLE: dynamoDbTableStory.tableName
       }
     });
 
@@ -65,7 +70,7 @@ export class ServerStack extends Stack {
       handler: "handler",
       depsLockFilePath: 'yarn.lock',
       environment: {
-        STORY_TABLE: storyDynamoDbTable.tableName
+        STORY_TABLE: dynamoDbTableStory.tableName
       }
     });
 
@@ -81,12 +86,16 @@ export class ServerStack extends Stack {
       fieldName: 'getStoryStatus'
     });
 
-    storyDynamoDbTable.grantReadData(lambdaStoryStatus);
-    storyDynamoDbTable.grantFullAccess(lambdaStoryCreate);
+    dynamoDbTableStory.grantReadData(lambdaStoryStatus);
+    dynamoDbTableStory.grantFullAccess(lambdaStoryCreate);
 
 
-    const openCase = new StepFunctionTasks.DynamoGetItem(this, 'OpenCase', {
-      table: storyDynamoDbTable,
+    /*
+      STEP FUNCTIONS
+    */
+
+    const taskGetStoryData = new StepFunctionTasks.DynamoGetItem(this, 'Get Story Data', {
+      table: dynamoDbTableStory,
       key: {
         storyId: StepFunctionTasks.DynamoAttributeValue.fromString(
           StepFunction.JsonPath.stringAt('$.storyId'))
@@ -98,28 +107,113 @@ export class ServerStack extends Stack {
       outputPath: '$.Item',
     });
 
-    const lambdaChainEnd = new LambdaNodeJs.NodejsFunction(this, "LambdaChainEnd", {
+    const bucketStoryText = new S3.Bucket(this, "Story Text", {
+      bucketName: 'story-text-original',
+      publicReadAccess: true,
+      blockPublicAccess: S3.BlockPublicAccess.BLOCK_ACLS,
+      enforceSSL: true
+    });
+
+    const lambdaStoryGenerate = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryGenerate", {
       runtime: Lambda.Runtime.NODEJS_18_X,
-      entry: "resources/workflow-log-dynamo.ts",
+      entry: "resources/workflow-story-generate.ts",
       handler: "handler",
       depsLockFilePath: 'yarn.lock',
+      environment: {
+        TEXT_BUCKET_NAME: bucketStoryText.bucketName,
+      }
     });
-    const lambdaChainEndTask = new StepFunctionTasks.LambdaInvoke(this, 'LambdaInvokeLambdaChainEnd', {
-      lambdaFunction: lambdaChainEnd,
+
+    bucketStoryText.grantWrite(lambdaStoryGenerate);
+
+    const taskStoryGenerate = new StepFunctionTasks.LambdaInvoke(this, 'Story Generate', {
+      lambdaFunction: lambdaStoryGenerate,
       outputPath: '$.Payload',
     });
 
-    const chain = StepFunction.Chain.start(openCase)
-      .next(lambdaChainEndTask)
+    const bucketStoryTranslation = new S3.Bucket(this, "Story Translation", {
+      bucketName: 'story-text-translation',
+      publicReadAccess: true,
+      blockPublicAccess: S3.BlockPublicAccess.BLOCK_ACLS,
+      enforceSSL: true
+    });
+
+    const lambdaStoryTranslate = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryTranslate", {
+      runtime: Lambda.Runtime.NODEJS_18_X,
+      entry: "resources/workflow-story-translate.ts",
+      handler: "handler",
+      depsLockFilePath: 'yarn.lock',
+      environment: {
+        TEXT_BUCKET_URL: bucketStoryText.s3UrlForObject(),
+        TRANSLATION_BUCKET_URL: bucketStoryTranslation.s3UrlForObject(),
+      }
+    });
+
+    lambdaStoryTranslate.addToRolePolicy(
+      new IAM.PolicyStatement({
+        actions: ["translate:StartTextTranslationJob", "iam:PassRole"],
+        resources: ["*"]
+      })
+    );
+
+    const roleTranslate = new IAM.Role(this, "Role", {
+      assumedBy: new IAM.CompositePrincipal(
+        new IAM.ServicePrincipal("s3.amazonaws.com"),
+        new IAM.ServicePrincipal("translate.amazonaws.com")
+      )
+    })
+    bucketStoryText.grantRead(roleTranslate);
+    bucketStoryText.grantRead(lambdaStoryTranslate);
+    bucketStoryTranslation.grantReadWrite(roleTranslate);
+    lambdaStoryTranslate.addEnvironment('TEXT_BUCKET_ACCESS_ROLE_ARN', roleTranslate.roleArn);
+
+    const taskStoryTranslate = new StepFunctionTasks.LambdaInvoke(this, 'Story Translate', {
+      lambdaFunction: lambdaStoryTranslate,
+      outputPath: '$.Payload',
+    });
+
+    const lambdaCheckTranslateStatus = new LambdaNodeJs.NodejsFunction(this, "LambdaCheckTranslateStatus", {
+      runtime: Lambda.Runtime.NODEJS_18_X,
+      entry: "resources/workflow-check-translate-status.ts",
+      handler: "handler",
+      depsLockFilePath: 'yarn.lock',
+      environment: {
+        TRANSLATION_BUCKET_NAME: bucketStoryTranslation.bucketName,
+      }
+    });
+
+    lambdaCheckTranslateStatus.addToRolePolicy(
+      new IAM.PolicyStatement({
+        actions: ["translate:DescribeTextTranslationJob", "iam:PassRole"],
+        resources: ["*"]
+      })
+    );
+
+    bucketStoryTranslation.grantRead(lambdaCheckTranslateStatus);
+
+    const taskCheckTranslateStatus = new StepFunctionTasks.LambdaInvoke(this, 'Check Translate Status', {
+      lambdaFunction: lambdaCheckTranslateStatus,
+      outputPath: '$.Payload',
+    });
+
+    const taskStoryTranslateWait = new StepFunction.Wait(this, 'Wait for Story Translate', {
+      time: StepFunction.WaitTime.duration(Duration.seconds(10)),
+    });
+
+    const chain = StepFunction.Chain.start(taskGetStoryData)
+      .next(taskStoryGenerate)
+      .next(taskStoryTranslate)
+      .next(taskStoryTranslateWait)
+      .next(taskCheckTranslateStatus)
       .next(
-        new StepFunction.Choice(this, 'Is it ok?')
-          .when(StepFunction.Condition.stringEquals('$.status', 'OK'), new StepFunction.Succeed(this, 'Succeed'))
-          .otherwise(new StepFunction.Fail(this, 'Fail'))
+        new StepFunction.Choice(this, 'Is Translate Complete?')
+          .when(StepFunction.Condition.booleanEquals('$.completed', true), new StepFunction.Succeed(this, 'Succeed'))
+          .otherwise(taskStoryTranslateWait)
       );
 
     const stateMachine = new StepFunction.StateMachine(this, "StateMachine", {
-      definition: chain,
-    })
+      definition: chain
+    });
 
     stateMachine.grantStartExecution(lambdaStoryCreate);
     lambdaStoryCreate.addEnvironment('STATE_MACHINE_ARN', stateMachine.stateMachineArn)

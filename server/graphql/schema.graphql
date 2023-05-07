@@ -32,10 +32,10 @@ enum StoryTheme {
 }
 
 enum SupportedLanguages {
-  ENGLISH
-  PORTUGUESE
-  ITALIAN
-  FRENCH
+  en
+  pt
+  it
+  fr
 }
 
 enum NarrativeStyle {
