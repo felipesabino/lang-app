@@ -5,10 +5,6 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 const s3client = new S3Client({});
 
-export interface StoryGenerateEnvironmentVariables {
-  TEXT_BUCKET_NAME: string;
-}
-
 export const handler = async (event: Record<string, AttributeValue>): Promise<{metadata: Story}> => {
   const metadata = unmarshall(event) as Story;
 

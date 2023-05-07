@@ -144,72 +144,30 @@ export class ServerStack extends Stack {
       handler: "handler",
       depsLockFilePath: 'yarn.lock',
       environment: {
-        TEXT_BUCKET_URL: bucketStoryText.s3UrlForObject(),
-        TRANSLATION_BUCKET_URL: bucketStoryTranslation.s3UrlForObject(),
+        TEXT_BUCKET_NAME: bucketStoryText.bucketName,
+        TRANSLATION_BUCKET_NAME: bucketStoryTranslation.bucketName,
       }
     });
 
     lambdaStoryTranslate.addToRolePolicy(
       new IAM.PolicyStatement({
-        actions: ["translate:StartTextTranslationJob", "iam:PassRole"],
+        actions: ["translate:TranslateText", "iam:PassRole"],
         resources: ["*"]
       })
     );
-
-    const roleTranslate = new IAM.Role(this, "Role", {
-      assumedBy: new IAM.CompositePrincipal(
-        new IAM.ServicePrincipal("s3.amazonaws.com"),
-        new IAM.ServicePrincipal("translate.amazonaws.com")
-      )
-    })
-    bucketStoryText.grantRead(roleTranslate);
     bucketStoryText.grantRead(lambdaStoryTranslate);
-    bucketStoryTranslation.grantReadWrite(roleTranslate);
-    lambdaStoryTranslate.addEnvironment('TEXT_BUCKET_ACCESS_ROLE_ARN', roleTranslate.roleArn);
+    bucketStoryTranslation.grantWrite(lambdaStoryTranslate);
 
     const taskStoryTranslate = new StepFunctionTasks.LambdaInvoke(this, 'Story Translate', {
       lambdaFunction: lambdaStoryTranslate,
       outputPath: '$.Payload',
     });
 
-    const lambdaCheckTranslateStatus = new LambdaNodeJs.NodejsFunction(this, "LambdaCheckTranslateStatus", {
-      runtime: Lambda.Runtime.NODEJS_18_X,
-      entry: "resources/workflow-check-translate-status.ts",
-      handler: "handler",
-      depsLockFilePath: 'yarn.lock',
-      environment: {
-        TRANSLATION_BUCKET_NAME: bucketStoryTranslation.bucketName,
-      }
-    });
-
-    lambdaCheckTranslateStatus.addToRolePolicy(
-      new IAM.PolicyStatement({
-        actions: ["translate:DescribeTextTranslationJob", "iam:PassRole"],
-        resources: ["*"]
-      })
-    );
-
-    bucketStoryTranslation.grantRead(lambdaCheckTranslateStatus);
-
-    const taskCheckTranslateStatus = new StepFunctionTasks.LambdaInvoke(this, 'Check Translate Status', {
-      lambdaFunction: lambdaCheckTranslateStatus,
-      outputPath: '$.Payload',
-    });
-
-    const taskStoryTranslateWait = new StepFunction.Wait(this, 'Wait for Story Translate', {
-      time: StepFunction.WaitTime.duration(Duration.seconds(10)),
-    });
 
     const chain = StepFunction.Chain.start(taskGetStoryData)
       .next(taskStoryGenerate)
       .next(taskStoryTranslate)
-      .next(taskStoryTranslateWait)
-      .next(taskCheckTranslateStatus)
-      .next(
-        new StepFunction.Choice(this, 'Is Translate Complete?')
-          .when(StepFunction.Condition.booleanEquals('$.completed', true), new StepFunction.Succeed(this, 'Succeed'))
-          .otherwise(taskStoryTranslateWait)
-      );
+      .next(new StepFunction.Succeed(this, 'Succeed'));
 
     const stateMachine = new StepFunction.StateMachine(this, "StateMachine", {
       definition: chain

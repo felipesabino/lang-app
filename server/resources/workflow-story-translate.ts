@@ -1,34 +1,46 @@
 import { Story } from "./model/story-dynamodb";
-import { TranslateClient, StartTextTranslationJobCommand } from '@aws-sdk/client-translate';
+import { TranslateClient, TranslateTextCommand } from '@aws-sdk/client-translate';
+import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 
+const s3client = new S3Client({});
 const translateClient = new TranslateClient({});
 
+export const handler = async (event: {metadata: Story}): Promise<{metadata: Story}> => {
 
+  const TEXT_BUCKET_NAME = process.env.TEXT_BUCKET_NAME;
+  const TRANSLATION_BUCKET_NAME = process.env.TRANSLATION_BUCKET_NAME;
 
-export const handler = async (event: {metadata: Story}): Promise<{metadata: Story, translateJobId: string}> => {
+  const metadata = event.metadata;
+  const TEXT_KEY = `${metadata.storyId}/text.txt`;
+  const TRANSLATION_KEY = `${metadata.storyId}/translation.txt`;
 
-  const TEXT_BUCKET_ACCESS_ROLE_ARN = process.env.TEXT_BUCKET_ACCESS_ROLE_ARN;
-  const TEXT_BUCKET_URL = process.env.TEXT_BUCKET_URL;
-  const TEXT_STORY_URI = `${TEXT_BUCKET_URL}/${event.metadata.storyId}/`;
-
-  const TRANSLATION_BUCKET_URL = process.env.TRANSLATION_BUCKET_URL;
-  const URI = `${TRANSLATION_BUCKET_URL}/${event.metadata.storyId}/`;
-
-  console.log([TEXT_BUCKET_ACCESS_ROLE_ARN, TEXT_BUCKET_URL, TEXT_STORY_URI, TRANSLATION_BUCKET_URL, URI]);
-
-  const output = await translateClient.send(new StartTextTranslationJobCommand({
-    DataAccessRoleArn: TEXT_BUCKET_ACCESS_ROLE_ARN,
-    InputDataConfig: {
-      ContentType: 'text/plain',
-      S3Uri: TEXT_STORY_URI
-    },
-    OutputDataConfig: {
-      S3Uri: URI
-    },
-    SourceLanguageCode: event.metadata.creationMetadata.language.source,
-    TargetLanguageCodes: [event.metadata.creationMetadata.language.target],
-    JobName: event.metadata.storyId,
+  const textObject = await s3client.send(new GetObjectCommand({
+    Bucket: TEXT_BUCKET_NAME,
+    Key: TEXT_KEY
   }));
 
-  return { metadata: event.metadata, translateJobId: output.JobId + '' };
+  const output = await translateClient.send(new TranslateTextCommand({
+    SourceLanguageCode: metadata.creationMetadata.language.source,
+    TargetLanguageCode: metadata.creationMetadata.language.target,
+    Text: await textObject.Body?.transformToString('utf-8')
+  }));
+
+  await s3client.send(new PutObjectCommand({
+    Bucket: TRANSLATION_BUCKET_NAME,
+    Key: TRANSLATION_KEY,
+    Body: output.TranslatedText,
+    ContentType: 'text/plain',
+    Metadata: {
+      'x-amz-meta-storyId': metadata.storyId,
+      'x-amz-meta-generationRequestDate': metadata.generationRequestDate + '',
+      'x-amz-meta-gramarOptions': metadata.creationMetadata.gramarOptions.join('|'),
+      'x-amz-meta-language-source': metadata.creationMetadata.language.source,
+      'x-amz-meta-language-target': metadata.creationMetadata.language.target,
+      'x-amz-meta-theme': metadata.creationMetadata.theme,
+      'x-amz-meta-narrationStyle': metadata.creationMetadata.narrationStyle,
+      'x-amz-meta-specificWords': metadata.creationMetadata.specificWords.join('|'),
+    }
+  }));
+
+  return { metadata: event.metadata };
 }

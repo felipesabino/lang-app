@@ -13,3 +13,8 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 * `cdk diff`         compare deployed stack with current state
 * `cdk synth`        emits the synthesized CloudFormation template
 * `cdk bootstrap`    creates a stack includind resources needed to deploy AWS CDK apps into this environment
+
+
+## Lessons Learned
+
+- AWS Translate batch takes aroung 15 min to complete a task, even with small files (<1kb)
