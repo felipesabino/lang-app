@@ -46,6 +46,7 @@ enum NarrativeStyle {
   NEWYORKER
 }
 
+
 enum GrammarOptions {
   PASTTENSE
   PRESENTTENSE
@@ -79,6 +80,7 @@ type StoryCreationMetadata implements StoryOptions {
   narrationStyle: NarrativeStyle!
   gramarOptions: [GrammarOptions!]!
   specificWords: [String!]!
+  voice: String!
 }
 
 enum AudioSpeed {
@@ -126,6 +128,7 @@ input CreateStoryInput {
   narrationStyle: NarrativeStyle!
   gramarOptions: [GrammarOptions!]!
   specificWords: [String!]!
+  voice: String!
 }
 
 type CreateStoryOutput {

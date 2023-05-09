@@ -21,6 +21,6 @@ new ServerStack(app, 'ServerStack', {
 
   env: {
     account: process.env.CDK_DEPLOY_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT,
-    region: process.env.CDK_DEPLOY_REGION || process.env.CDK_DEFAULT_REGION
+    region: app.node.tryGetContext('stage') === 'development' ? 'us-west-2' : process.env.CDK_DEFAULT_REGION,
   }
 });

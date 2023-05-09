@@ -1,3 +1,4 @@
+import { AvailableVoices } from "./voices";
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -32,6 +33,7 @@ export type CreateStoryInput = {
   narrationStyle: NarrativeStyle;
   specificWords: Array<Scalars['String']>;
   theme: StoryTheme;
+  voice: Scalars['String'];
 };
 
 export type CreateStoryOutput = {
@@ -133,6 +135,7 @@ export type StoryCreationMetadata = StoryOptions & {
   narrationStyle: NarrativeStyle;
   specificWords: Array<Scalars['String']>;
   theme: StoryTheme;
+  voice: Scalars['String'];
 };
 
 export type StoryOptions = {

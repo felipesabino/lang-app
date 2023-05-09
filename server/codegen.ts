@@ -1,13 +1,25 @@
-import { CodegenConfig } from '@graphql-codegen/cli'
+import { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
   schema: 'graphql/*.graphql',
   generates: {
     './resources/model/graphql-schema.ts': {
       plugins: [
-        'typescript'
-      ]
-    }
+        'typescript',
+        {
+          add: {
+            content: 'import { AvailableVoices } from "./voices";',
+          },
+        },
+      ],
+      config: {
+        strictScalars: true,
+        customTypesMapping: {
+          'StoryCreationMetadata.voice': 'AvailableVoices',
+          'CreateStoryInput.voice': 'AvailableVoices',
+        },
+      },
+    },
   },
   config: {
     scalars: {
@@ -20,8 +32,9 @@ const config: CodegenConfig = {
       AWSURL: 'string',
       AWSPhone: 'string',
       AWSIPAddress: 'string',
-    }
-  }
-}
+      AvailableVoices: 'AvailableVoices',
+    },
+  },
+};
 
-export default config
+export default config;

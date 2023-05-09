@@ -18,3 +18,6 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 ## Lessons Learned
 
 - AWS Translate batch takes aroung 15 min to complete a task, even with small files (<1kb)
+- AWS AppSync has no support for custom scalar types on GraphQL Schema
+  - https://github.com/aws/aws-appsync-community/issues/26
+  - https://docs.aws.amazon.com/appsync/latest/devguide/scalars.html
