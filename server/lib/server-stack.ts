@@ -18,6 +18,40 @@ export class ServerStack extends Stack {
     const ASSET_SUFFIX = ENVIRONMENT === "production" ? "" : "-dev";
 
     /*
+      Resources (Tables, Buckets, etc)
+    */
+
+    const dynamoDbTableStory = new DynamoDB.Table(this, "TableStory", {
+      tableName: `Story${ASSET_SUFFIX}`,
+      billingMode: DynamoDB.BillingMode.PAY_PER_REQUEST,
+      partitionKey: {
+        name: "storyId",
+        type: DynamoDB.AttributeType.STRING,
+      },
+    });
+
+    const bucketStoryTranslation = new S3.Bucket(this, "BucketStoryTranslation", {
+      bucketName: `story-text-translation${ASSET_SUFFIX}`,
+      publicReadAccess: true,
+      blockPublicAccess: S3.BlockPublicAccess.BLOCK_ACLS,
+      enforceSSL: true,
+    });
+
+    const bucketStoryText = new S3.Bucket(this, "BucketStoryText", {
+      bucketName: `story-text-original${ASSET_SUFFIX}`,
+      publicReadAccess: true,
+      blockPublicAccess: S3.BlockPublicAccess.BLOCK_ACLS,
+      enforceSSL: true,
+    });
+
+    const bucketStoryAudio = new S3.Bucket(this, "BucketStoryAudio", {
+      bucketName: `story-audio${ASSET_SUFFIX}`,
+      publicReadAccess: true,
+      blockPublicAccess: S3.BlockPublicAccess.BLOCK_ACLS,
+      enforceSSL: true,
+    });
+
+    /*
       API
     */
     const api = new AppSync.GraphqlApi(this, "Api", {
@@ -49,14 +83,7 @@ export class ServerStack extends Stack {
       value: this.region,
     });
 
-    const dynamoDbTableStory = new DynamoDB.Table(this, "TableStory", {
-      tableName: `Story${ASSET_SUFFIX}`,
-      billingMode: DynamoDB.BillingMode.PAY_PER_REQUEST,
-      partitionKey: {
-        name: "storyId",
-        type: DynamoDB.AttributeType.STRING,
-      },
-    });
+
 
     const lambdaStoryCreate = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryCreate", {
       runtime: Lambda.Runtime.NODEJS_18_X,
@@ -105,16 +132,12 @@ export class ServerStack extends Stack {
       projectionExpression: [
         new StepFunctionTasks.DynamoProjectionExpression().withAttribute("storyId"),
         new StepFunctionTasks.DynamoProjectionExpression().withAttribute("creationMetadata"),
+        new StepFunctionTasks.DynamoProjectionExpression().withAttribute("generationRequestDate"),
       ],
       outputPath: "$.Item",
     });
 
-    const bucketStoryText = new S3.Bucket(this, "BucketStoryText", {
-      bucketName: `story-text-original${ASSET_SUFFIX}`,
-      publicReadAccess: true,
-      blockPublicAccess: S3.BlockPublicAccess.BLOCK_ACLS,
-      enforceSSL: true,
-    });
+
 
     const lambdaStoryGenerate = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryGenerate", {
       runtime: Lambda.Runtime.NODEJS_18_X,
@@ -133,12 +156,7 @@ export class ServerStack extends Stack {
       outputPath: "$.Payload",
     });
 
-    const bucketStoryTranslation = new S3.Bucket(this, "BucketStoryTranslation", {
-      bucketName: `story-text-translation${ASSET_SUFFIX}`,
-      publicReadAccess: true,
-      blockPublicAccess: S3.BlockPublicAccess.BLOCK_ACLS,
-      enforceSSL: true,
-    });
+
 
     const lambdaStoryTranslate = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryTranslate", {
       runtime: Lambda.Runtime.NODEJS_18_X,
@@ -165,13 +183,6 @@ export class ServerStack extends Stack {
       outputPath: "$.Payload",
     });
 
-    const bucketStoryAudio = new S3.Bucket(this, "BucketStoryAudio", {
-      bucketName: `story-audio${ASSET_SUFFIX}`,
-      publicReadAccess: true,
-      blockPublicAccess: S3.BlockPublicAccess.BLOCK_ACLS,
-      enforceSSL: true,
-    });
-
     const taskParallelStoryAudio = new StepFunction.Parallel(this, "TaskParallelStoryAudio", {});
 
     const lambdaStoryAudio = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryAudio", {
@@ -181,7 +192,7 @@ export class ServerStack extends Stack {
       depsLockFilePath: "yarn.lock",
       timeout: Duration.minutes(5),
       environment: {
-        TRANSLATION_BUCKET_NAME: bucketStoryTranslation.bucketName,
+        TEXT_BUCKET_NAME: bucketStoryText.bucketName,
         AUDIO_BUCKET_NAME: bucketStoryAudio.bucketName,
       },
     });
@@ -192,7 +203,7 @@ export class ServerStack extends Stack {
         resources: ["*"],
       })
     );
-    bucketStoryTranslation.grantRead(lambdaStoryAudio);
+    bucketStoryText.grantRead(lambdaStoryAudio);
     bucketStoryAudio.grantReadWrite(lambdaStoryAudio);
 
     ["slow", "normal"].forEach((speed) => {

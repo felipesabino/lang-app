@@ -99,7 +99,7 @@ type SpeechMark {
 type StoryAudioAsset {
   url: AWSURL!
   speed: AudioSpeed!
-  speechMarks: SpeechMark!
+  speechMarks: [SpeechMark!]!
 }
 
 type StoryAssets {

@@ -123,7 +123,7 @@ export type StoryAssets = {
 
 export type StoryAudioAsset = {
   __typename?: 'StoryAudioAsset';
-  speechMarks: SpeechMark;
+  speechMarks: Array<SpeechMark>;
   speed: AudioSpeed;
   url: Scalars['AWSURL'];
 };
