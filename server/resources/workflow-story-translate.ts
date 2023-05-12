@@ -20,8 +20,10 @@ export const handler = async (event: {metadata: Story}): Promise<{metadata: Stor
   }));
 
   const output = await translateClient.send(new TranslateTextCommand({
-    SourceLanguageCode: metadata.creationMetadata.language.source,
-    TargetLanguageCode: metadata.creationMetadata.language.target,
+    // story is generated in the target language
+    //  we then translate into the language the customer is using the application (the source)
+    SourceLanguageCode: metadata.creationMetadata.language.target,
+    TargetLanguageCode: metadata.creationMetadata.language.source,
     Text: await textObject.Body?.transformToString('utf-8')
   }));
 

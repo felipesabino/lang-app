@@ -1,15 +1,16 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
-import { QueryGetStoryByIdArgs, StoryStatus } from './model/graphql-schema'
+import { QueryGetStoryStatusArgs, StoryStatus } from './model/graphql-schema'
+import { translateConfig } from './model/dynamodb-transaltion-config';
 
-const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const client = DynamoDBDocumentClient.from(new DynamoDBClient({}), translateConfig);
 
 export const handler = async (event: any): Promise<StoryStatus> => {
   try {
 
     const TABLE_NAME = process.env.STORY_TABLE;
 
-    const { storyId } = event.arguments as QueryGetStoryByIdArgs;
+    const { storyId } = event.arguments as QueryGetStoryStatusArgs;
 
     const record = await client.send(new GetCommand({
       TableName: TABLE_NAME,

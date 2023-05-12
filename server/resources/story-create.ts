@@ -4,8 +4,10 @@ import { v4 as uuidV4 } from 'uuid';
 import { CreateStoryOutput, CreateStoryInput, StoryStatusType } from './model/graphql-schema'
 import { Story } from './model/story-dynamodb';
 import * as AWS from 'aws-sdk';
+import { translateConfig } from './model/dynamodb-transaltion-config';
 
-const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+
+const client = DynamoDBDocumentClient.from(new DynamoDBClient({}), translateConfig);
 const sfn = new AWS.StepFunctions({});
 
 export const handler = async (event: any): Promise<CreateStoryOutput> => {

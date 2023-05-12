@@ -9,18 +9,18 @@ const pollyClient = new PollyClient({});
 type AudioSpeeds = "slow" | "normal";
 
 export const handler = async (event: { metadata: Story, speed: AudioSpeeds }): Promise<{ metadata: Story }> => {
-  const TRANSLATION_BUCKET_NAME = process.env.TRANSLATION_BUCKET_NAME;
+  const TEXT_BUCKET_NAME = process.env.TEXT_BUCKET_NAME;
   const AUDIO_BUCKET_NAME = process.env.AUDIO_BUCKET_NAME;
   const AUDIO_SPEED = event.speed as AudioSpeeds;
 
   const metadata = event.metadata;
   const AUDIO_FILE_KEY = `${metadata.storyId}/audio-${AUDIO_SPEED}.mp3`;
   const SPEECH_FILE_KEY = `${metadata.storyId}/speech-marks-${AUDIO_SPEED}.json`;
-  const TRANSLATION_KEY = `${metadata.storyId}/translation.txt`;
+  const TRANSLATION_KEY = `${metadata.storyId}/text.txt`;
 
   const translationObject = await s3client.send(
     new GetObjectCommand({
-      Bucket: TRANSLATION_BUCKET_NAME,
+      Bucket: TEXT_BUCKET_NAME,
       Key: TRANSLATION_KEY,
     })
   );
@@ -96,7 +96,7 @@ const generateSpeechMarks = async (
   // add , for each line
   // surround by [ and ]
   //  example output can be seen at https://docs.aws.amazon.com/polly/latest/dg/speechmarkexamples.html
-  const marksFormatted = `[${(await speechMarks.AudioStream?.transformToString("utf-8"))?.split('\n').join(',')}]`;
+  const marksFormatted = `[${(await speechMarks.AudioStream?.transformToString("utf-8"))?.trim().split('\n').join(',')}]`;
 
   await s3client.send(
     new PutObjectCommand({
