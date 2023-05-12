@@ -105,20 +105,43 @@ export class ServerStack extends Stack {
       },
     });
 
+    const lambdaStoryGetById = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryGetById", {
+      runtime: Lambda.Runtime.NODEJS_18_X,
+      entry: "resources/story-get-by-id.ts",
+      handler: "handler",
+      depsLockFilePath: "yarn.lock",
+      environment: {
+        STORY_TABLE: dynamoDbTableStory.tableName,
+        TEXT_BUCKET_NAME: bucketStoryText.bucketName,
+        TRANSLATION_BUCKET_NAME: bucketStoryTranslation.bucketName,
+        AUDIO_BUCKET_NAME: bucketStoryAudio.bucketName,
+        AUDIO_BUCKET_URL: bucketStoryAudio.urlForObject(''),
+      },
+    });
+    const lamdaStoryGetByIdDataSource = api.addLambdaDataSource("LambdaStoryGetByIdDataSource", lambdaStoryGetById);
+    lamdaStoryGetByIdDataSource.createResolver("Query-getStoryById", {
+      typeName: "Query",
+      fieldName: "getStoryById",
+    });
+    dynamoDbTableStory.grantReadData(lambdaStoryGetById);
+    bucketStoryText.grantRead(lambdaStoryGetById);
+    bucketStoryTranslation.grantRead(lambdaStoryGetById);
+    bucketStoryAudio.grantRead(lambdaStoryGetById);
+
     const lamdaStoryCreateDataSource = api.addLambdaDataSource("LambdaStoryCreateDataSource", lambdaStoryCreate);
     lamdaStoryCreateDataSource.createResolver("Mutation-CreateStory", {
       typeName: "Mutation",
       fieldName: "createStory",
     });
+    dynamoDbTableStory.grantFullAccess(lambdaStoryCreate);
 
     const lamdaStoryStatusDataSource = api.addLambdaDataSource("LambdaStoryStatusDataSource", lambdaStoryStatus);
     lamdaStoryStatusDataSource.createResolver("Query-GetStoryStatus", {
       typeName: "Query",
       fieldName: "getStoryStatus",
     });
-
     dynamoDbTableStory.grantReadData(lambdaStoryStatus);
-    dynamoDbTableStory.grantFullAccess(lambdaStoryCreate);
+
 
     /*
       STEP FUNCTIONS
@@ -183,7 +206,7 @@ export class ServerStack extends Stack {
       outputPath: "$.Payload",
     });
 
-    const taskParallelStoryAudio = new StepFunction.Parallel(this, "TaskParallelStoryAudio", {});
+    const taskParallelStoryAssets = new StepFunction.Parallel(this, "TaskParallelStoryAssets", {});
 
     const lambdaStoryAudio = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryAudio", {
       runtime: Lambda.Runtime.NODEJS_18_X,
@@ -219,7 +242,7 @@ export class ServerStack extends Stack {
         outputPath: "$.Payload",
       });
 
-      taskParallelStoryAudio.branch(taskStoryAudioPass.next(taskStoryAudio));
+      taskParallelStoryAssets.branch(taskStoryAudioPass.next(taskStoryAudio));
     });
 
     const taskUpdateStoryStatus = new StepFunctionTasks.DynamoUpdateItem(this, "taskUpdateStoryStatus", {
@@ -238,7 +261,7 @@ export class ServerStack extends Stack {
     const chain = StepFunction.Chain.start(taskGetStoryData)
       .next(taskStoryGenerate)
       .next(taskStoryTranslate)
-      .next(taskParallelStoryAudio)
+      .next(taskParallelStoryAssets)
       .next(taskUpdateStoryStatus)
       .next(new StepFunction.Succeed(this, "Succeed"));
 

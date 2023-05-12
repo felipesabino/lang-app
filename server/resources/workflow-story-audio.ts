@@ -96,7 +96,7 @@ const generateSpeechMarks = async (
   // add , for each line
   // surround by [ and ]
   //  example output can be seen at https://docs.aws.amazon.com/polly/latest/dg/speechmarkexamples.html
-  const marksFormatted = `[${(await speechMarks.AudioStream?.transformToString("utf-8"))?.split('\n').join(',')}]`;
+  const marksFormatted = `[${(await speechMarks.AudioStream?.transformToString("utf-8"))?.trim().split('\n').join(',')}]`;
 
   await s3client.send(
     new PutObjectCommand({
