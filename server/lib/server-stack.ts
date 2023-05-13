@@ -167,12 +167,20 @@ export class ServerStack extends Stack {
       entry: "resources/workflow-story-generate.ts",
       handler: "handler",
       depsLockFilePath: "yarn.lock",
+      timeout: Duration.minutes(5),
       environment: {
         TEXT_BUCKET_NAME: bucketStoryText.bucketName,
+        OPENAI_API_KEY_SECRET_NAME: 'openai-apikey',
+        OPENAI_API_KEY_SECRET_REGION: props?.env?.region + '',
       },
     });
-
     bucketStoryText.grantWrite(lambdaStoryGenerate);
+    lambdaStoryGenerate.addToRolePolicy(
+      new IAM.PolicyStatement({
+        actions: ["secretsmanager:GetSecretValue"],
+        resources: ["*"],
+      })
+    );
 
     const taskStoryGenerate = new StepFunctionTasks.LambdaInvoke(this, "TaskStoryGenerate", {
       lambdaFunction: lambdaStoryGenerate,

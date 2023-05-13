@@ -1,7 +1,7 @@
 import { Story } from "./model/story-dynamodb";
 import { OutputFormat, PollyClient, SynthesizeSpeechCommand, VoiceId } from "@aws-sdk/client-polly";
 import { S3Client, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
-import { SupportedLanguages } from "./model/graphql-schema";
+import { normalizeLanguageCode } from './model/normalizeLanguage'
 
 const s3client = new S3Client({});
 const pollyClient = new PollyClient({});
@@ -116,21 +116,6 @@ const generateSpeechMarks = async (
       },
     })
   );
-};
-
-const normalizeLanguageCode = (language: SupportedLanguages): string => {
-  switch (language) {
-    case SupportedLanguages.En:
-      return "en-US";
-    case SupportedLanguages.Fr:
-      return "fr-FR";
-    case SupportedLanguages.It:
-      return "it-IT";
-    case SupportedLanguages.Pt:
-      return "pt-BR";
-    default:
-      throw new Error(`Error when normalizing language code, provided language is not supported: ${language}`);
-  }
 };
 
 const generateSSML = (text: string | undefined, speed: AudioSpeeds): string => {
