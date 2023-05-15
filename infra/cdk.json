@@ -2,7 +2,9 @@
   "app": "npx ts-node --prefer-ts-exts bin/server.ts",
   "watch": {
     "include": [
-      "**"
+      "**",
+      "../packages/graphql/schema/schema.graphql",
+      "../server/src/**"
     ],
     "exclude": [
       "README.md",

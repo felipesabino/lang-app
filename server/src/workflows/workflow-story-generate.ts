@@ -1,11 +1,11 @@
 import { unmarshall } from "@aws-sdk/util-dynamodb";
-import { Story } from "./model/story-dynamodb";
+import { Story } from "../model";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
-import { OpenAiClient } from "./openai/openai-client";
-import { getRequest as promptStoryGenerationRequest } from "./openai/prompts/prompt-story-generation";
-import { CreateStoryInput } from "./model/graphql-schema";
+import { OpenAiClient } from "../openai/openai-client";
+import { getRequest as promptStoryGenerationRequest } from "../openai/prompts/prompt-story-generation";
+import { CreateStoryInput } from "@langapp/graphql";
 
 const s3client = new S3Client({});
 
@@ -78,6 +78,6 @@ const getStoryFromOpenAi = async (
   try {
     return openaiClient.sendRequest(openAiRequest);
   } catch (error: any) {
-    throw new Error(`Error on openai request: ${error.message}`)
+    throw new Error(`Error on openai request: ${error.message}`);
   }
 };

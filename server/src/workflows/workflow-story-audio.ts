@@ -1,14 +1,14 @@
-import { Story } from "./model/story-dynamodb";
+import { Story } from "../model";
 import { OutputFormat, PollyClient, SynthesizeSpeechCommand, VoiceId } from "@aws-sdk/client-polly";
 import { S3Client, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
-import { normalizeLanguageCode } from './model/normalizeLanguage'
+import { normalizeLanguageCode } from "@langapp/models";
 
 const s3client = new S3Client({});
 const pollyClient = new PollyClient({});
 
 type AudioSpeeds = "slow" | "normal";
 
-export const handler = async (event: { metadata: Story, speed: AudioSpeeds }): Promise<{ metadata: Story }> => {
+export const handler = async (event: { metadata: Story; speed: AudioSpeeds }): Promise<{ metadata: Story }> => {
   const TEXT_BUCKET_NAME = process.env.TEXT_BUCKET_NAME;
   const AUDIO_BUCKET_NAME = process.env.AUDIO_BUCKET_NAME;
   const AUDIO_SPEED = event.speed as AudioSpeeds;
@@ -96,7 +96,10 @@ const generateSpeechMarks = async (
   // add , for each line
   // surround by [ and ]
   //  example output can be seen at https://docs.aws.amazon.com/polly/latest/dg/speechmarkexamples.html
-  const marksFormatted = `[${(await speechMarks.AudioStream?.transformToString("utf-8"))?.trim().split('\n').join(',')}]`;
+  const marksFormatted = `[${(await speechMarks.AudioStream?.transformToString("utf-8"))
+    ?.trim()
+    .split("\n")
+    .join(",")}]`;
 
   await s3client.send(
     new PutObjectCommand({

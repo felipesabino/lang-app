@@ -1,5 +1,5 @@
 {
-  "name": "server",
+  "name": "@langapp/server",
   "version": "0.1.0",
   "bin": {
     "server": "bin/server.js"
@@ -7,17 +7,9 @@
   "scripts": {
     "build": "graphql-codegen && tsc",
     "watch": "tsc -w",
-    "test": "jest",
-    "cdk:production": "graphql-codegen && cdk",
-    "cdk": "graphql-codegen && cdk --context stage=development",
-    "generate": "graphql-codegen",
-    "prestart": "yarn generate",
-    "predev": "yarn generate"
+    "test": "jest"
   },
   "devDependencies": {
-    "@graphql-codegen/add": "^4.0.1",
-    "@graphql-codegen/cli": "^3.3.1",
-    "@graphql-codegen/typescript": "^3.0.4",
     "@types/aws-lambda": "^8.10.114",
     "@types/jest": "^29.4.0",
     "@types/node": "18.14.6",
@@ -31,6 +23,8 @@
     "typescript": "~4.9.5"
   },
   "dependencies": {
+    "@langapp/graphql": "1.0.0",
+    "@langapp/models": "1.0.0",
     "@aws-sdk/client-dynamodb": "^3.321.1",
     "@aws-sdk/client-polly": "^3.328.0",
     "@aws-sdk/client-s3": "^3.328.0",

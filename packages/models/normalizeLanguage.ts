@@ -1,4 +1,4 @@
-import { SupportedLanguages } from "./graphql-schema";
+import { SupportedLanguages } from "@langapp/graphql";
 
 export const normalizeLanguageCode = (language: SupportedLanguages): string => {
   switch (language) {
