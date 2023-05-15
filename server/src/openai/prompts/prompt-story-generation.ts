@@ -1,18 +1,17 @@
 import { CreateChatCompletionRequest } from "openai";
-import { CreateStoryInput } from "../../model/graphql-schema";
-import { normalizeLanguageName } from "../../model/normalizeLanguage";
+import { CreateStoryInput } from "@langapp/graphql";
+import { normalizeLanguageName } from "@langapp/models";
 
 export interface StoryCreationProps {
   Metadata: CreateStoryInput;
 }
 
 export function getRequest(props: StoryCreationProps): CreateChatCompletionRequest {
-
   const language = normalizeLanguageName(props.Metadata.language.target);
   const theme = JSON.stringify(props.Metadata.theme.toLowerCase());
   const narrationStyle = JSON.stringify(props.Metadata.narrationStyle.toLowerCase());
-  const grammarOptions = props.Metadata.gramarOptions.map(option => JSON.stringify(option)).join(', ');
-  const wordsOrSentences = props.Metadata.specificWords.map(word => JSON.stringify(word)).join(', ');
+  const grammarOptions = props.Metadata.gramarOptions.map((option) => JSON.stringify(option)).join(", ");
+  const wordsOrSentences = props.Metadata.specificWords.map((word) => JSON.stringify(word)).join(", ");
 
   const prompt = `Your task it to create a story for language learners using ${language} language.
   Use ${theme} as theme. Use a ${narrationStyle} narration style.

@@ -1,7 +1,7 @@
 import {
   StoryStatusType,
   CreateStoryInput,
-} from './graphql-schema'
+} from '@langapp/graphql'
 
 export interface Story {
 

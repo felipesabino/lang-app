@@ -23,12 +23,11 @@
     "strictPropertyInitialization": false,
     "typeRoots": [
       "./node_modules/@types",
-      "./node_modules/@aws-sdk",
     ],
   },
   "exclude": [
     "node_modules",
-    "node_modules/@aws-sdk/**/*"
+    "cdk.out",
   ],
   "include": [
     "bin/**/*.ts",

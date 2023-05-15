@@ -1,3 +1,4 @@
+import * as path from "path";
 import { Stack, StackProps, Expiration, Duration, CfnOutput } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as AppSync from "aws-cdk-lib/aws-appsync";
@@ -8,7 +9,7 @@ import * as S3 from "aws-cdk-lib/aws-s3";
 import * as StepFunction from "aws-cdk-lib/aws-stepfunctions";
 import * as StepFunctionTasks from "aws-cdk-lib/aws-stepfunctions-tasks";
 import * as IAM from "aws-cdk-lib/aws-iam";
-import { StoryStatusType } from "../resources/model/graphql-schema";
+import { StoryStatusType } from "@langapp/graphql";
 
 export class ServerStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -16,6 +17,11 @@ export class ServerStack extends Stack {
 
     const ENVIRONMENT = this.node.tryGetContext("stage") || "development";
     const ASSET_SUFFIX = ENVIRONMENT === "production" ? "" : "-dev";
+    const PWD_ROOT = path.join(__dirname, "../..");
+    const PWD_SERVER = `${PWD_ROOT}/server/src`;
+    const PWD_API = `${PWD_SERVER}/api`;
+    const PWD_WORKFLOW = `${PWD_SERVER}/workflows`;
+    const PWD_GRAPHQL = `${PWD_ROOT}/packages/graphql`;
 
     /*
       Resources (Tables, Buckets, etc)
@@ -56,7 +62,7 @@ export class ServerStack extends Stack {
     */
     const api = new AppSync.GraphqlApi(this, "Api", {
       name: "appsync-api",
-      schema: AppSync.SchemaFile.fromAsset("graphql/schema.graphql"),
+      schema: AppSync.SchemaFile.fromAsset(`${PWD_GRAPHQL}/schema/schema.graphql`),
       authorizationConfig: {
         defaultAuthorization: {
           authorizationType: AppSync.AuthorizationType.API_KEY,
@@ -83,11 +89,9 @@ export class ServerStack extends Stack {
       value: this.region,
     });
 
-
-
     const lambdaStoryCreate = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryCreate", {
       runtime: Lambda.Runtime.NODEJS_18_X,
-      entry: "resources/story-create.ts",
+      entry: `${PWD_API}/story-create.ts`,
       handler: "handler",
       depsLockFilePath: "yarn.lock",
       environment: {
@@ -97,7 +101,7 @@ export class ServerStack extends Stack {
 
     const lambdaStoryStatus = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryStatus", {
       runtime: Lambda.Runtime.NODEJS_18_X,
-      entry: "resources/story-status.ts",
+      entry: `${PWD_API}/story-status.ts`,
       handler: "handler",
       depsLockFilePath: "yarn.lock",
       environment: {
@@ -107,7 +111,7 @@ export class ServerStack extends Stack {
 
     const lambdaStoryGetById = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryGetById", {
       runtime: Lambda.Runtime.NODEJS_18_X,
-      entry: "resources/story-get-by-id.ts",
+      entry: `${PWD_API}/story-get-by-id.ts`,
       handler: "handler",
       depsLockFilePath: "yarn.lock",
       environment: {
@@ -115,7 +119,7 @@ export class ServerStack extends Stack {
         TEXT_BUCKET_NAME: bucketStoryText.bucketName,
         TRANSLATION_BUCKET_NAME: bucketStoryTranslation.bucketName,
         AUDIO_BUCKET_NAME: bucketStoryAudio.bucketName,
-        AUDIO_BUCKET_URL: bucketStoryAudio.urlForObject(''),
+        AUDIO_BUCKET_URL: bucketStoryAudio.urlForObject(""),
       },
     });
     const lamdaStoryGetByIdDataSource = api.addLambdaDataSource("LambdaStoryGetByIdDataSource", lambdaStoryGetById);
@@ -142,7 +146,6 @@ export class ServerStack extends Stack {
     });
     dynamoDbTableStory.grantReadData(lambdaStoryStatus);
 
-
     /*
       STEP FUNCTIONS
     */
@@ -160,18 +163,16 @@ export class ServerStack extends Stack {
       outputPath: "$.Item",
     });
 
-
-
     const lambdaStoryGenerate = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryGenerate", {
       runtime: Lambda.Runtime.NODEJS_18_X,
-      entry: "resources/workflow-story-generate.ts",
+      entry: `${PWD_WORKFLOW}/workflow-story-generate.ts`,
       handler: "handler",
       depsLockFilePath: "yarn.lock",
       timeout: Duration.minutes(5),
       environment: {
         TEXT_BUCKET_NAME: bucketStoryText.bucketName,
-        OPENAI_API_KEY_SECRET_NAME: 'openai-apikey',
-        OPENAI_API_KEY_SECRET_REGION: props?.env?.region + '',
+        OPENAI_API_KEY_SECRET_NAME: "openai-apikey",
+        OPENAI_API_KEY_SECRET_REGION: props?.env?.region + "",
       },
     });
     bucketStoryText.grantWrite(lambdaStoryGenerate);
@@ -187,11 +188,9 @@ export class ServerStack extends Stack {
       outputPath: "$.Payload",
     });
 
-
-
     const lambdaStoryTranslate = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryTranslate", {
       runtime: Lambda.Runtime.NODEJS_18_X,
-      entry: "resources/workflow-story-translate.ts",
+      entry: `${PWD_WORKFLOW}/workflow-story-translate.ts`,
       handler: "handler",
       depsLockFilePath: "yarn.lock",
       environment: {
@@ -218,7 +217,7 @@ export class ServerStack extends Stack {
 
     const lambdaStoryAudio = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryAudio", {
       runtime: Lambda.Runtime.NODEJS_18_X,
-      entry: "resources/workflow-story-audio.ts",
+      entry: `${PWD_WORKFLOW}/workflow-story-audio.ts`,
       handler: "handler",
       depsLockFilePath: "yarn.lock",
       timeout: Duration.minutes(5),

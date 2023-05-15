@@ -1,0 +1,20 @@
+{
+  "name": "lang-app",
+  "version": "1.0.0",
+  "description": "Root folder for LangApp project",
+  "main": "index.js",
+  "repository": "https://github.com/felipesabino/lang-app.git",
+  "author": "Felipe Sabino <felipe@sabino.me>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "server",
+    "web",
+    "infra",
+    "packages/*"
+  ],
+  "scripts": {
+    "cdk": "yarn --cwd infra cdk",
+    "cdk:production": "yarn --cwd infra cdk:production"
+  }
+}
