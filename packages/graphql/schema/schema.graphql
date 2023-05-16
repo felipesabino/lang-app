@@ -70,16 +70,16 @@ interface StoryOptions {
   theme: StoryTheme!
   language: LanguageOutput!
   narrationStyle: NarrativeStyle!
-  gramarOptions: [GrammarOptions!]!
-  specificWords: [String!]!
+  gramarOptions: [GrammarOptions!]
+  specificWords: [String!]
 }
 
 type StoryCreationMetadata implements StoryOptions {
   theme: StoryTheme!
   language: LanguageOutput!
   narrationStyle: NarrativeStyle!
-  gramarOptions: [GrammarOptions!]!
-  specificWords: [String!]!
+  gramarOptions: [GrammarOptions!]
+  specificWords: [String!]
   voice: String!
 }
 
@@ -126,8 +126,8 @@ input CreateStoryInput {
   theme: StoryTheme!
   language: LanguageInput!
   narrationStyle: NarrativeStyle!
-  gramarOptions: [GrammarOptions!]!
-  specificWords: [String!]!
+  gramarOptions: [GrammarOptions!]
+  specificWords: [String!]
   voice: String!
 }
 

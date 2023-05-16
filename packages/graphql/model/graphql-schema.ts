@@ -1,4 +1,3 @@
-import { AvailableVoices } from "./voices";
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -28,10 +27,10 @@ export enum AudioSpeed {
 }
 
 export type CreateStoryInput = {
-  gramarOptions: Array<GrammarOptions>;
+  gramarOptions?: InputMaybe<Array<GrammarOptions>>;
   language: LanguageInput;
   narrationStyle: NarrativeStyle;
-  specificWords: Array<Scalars['String']>;
+  specificWords?: InputMaybe<Array<Scalars['String']>>;
   theme: StoryTheme;
   voice: Scalars['String'];
 };
@@ -130,19 +129,19 @@ export type StoryAudioAsset = {
 
 export type StoryCreationMetadata = StoryOptions & {
   __typename?: 'StoryCreationMetadata';
-  gramarOptions: Array<GrammarOptions>;
+  gramarOptions?: Maybe<Array<GrammarOptions>>;
   language: LanguageOutput;
   narrationStyle: NarrativeStyle;
-  specificWords: Array<Scalars['String']>;
+  specificWords?: Maybe<Array<Scalars['String']>>;
   theme: StoryTheme;
   voice: Scalars['String'];
 };
 
 export type StoryOptions = {
-  gramarOptions: Array<GrammarOptions>;
+  gramarOptions?: Maybe<Array<GrammarOptions>>;
   language: LanguageOutput;
   narrationStyle: NarrativeStyle;
-  specificWords: Array<Scalars['String']>;
+  specificWords?: Maybe<Array<Scalars['String']>>;
   theme: StoryTheme;
 };
 
