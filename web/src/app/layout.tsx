@@ -1,20 +1,41 @@
-import './globals.css'
-import { UserHeader } from './components/UserHeader'
+"use client";
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+import "./globals.css";
+import { UserHeader } from "./components/UserHeader";
+import { ApolloProvider, ApolloClient, InMemoryCache, HttpLink, ApolloLink, createHttpLink } from "@apollo/client";
+import { createAuthLink } from "aws-appsync-auth-link";
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const url = process.env.NEXT_PUBLIC_API_URL || "";
+  const region = process.env.NEXT_PUBLIC_API_REGION || "";
+
+  const link = ApolloLink.from([
+    createAuthLink({
+      url,
+      region,
+      auth: {
+        type: "API_KEY",
+        apiKey: process.env.NEXT_PUBLIC_API_KEY || "",
+      },
+    }),
+    createHttpLink({ uri: url }),
+  ]);
+
+  const client = new ApolloClient({
+    link,
+    cache: new InMemoryCache(),
+  });
 
   return (
     <html lang="en">
-      <body className='selection:bg-pink-300'>
+      <body className="selection:bg-pink-300">
         <div>
-          <UserHeader pageTitle='New Story' name='The User' />
-          {children}
+          <ApolloProvider client={client}>
+            <UserHeader pageTitle="New Story" name="The User" />
+            {children}
+          </ApolloProvider>
         </div>
       </body>
     </html>
-  )
+  );
 }

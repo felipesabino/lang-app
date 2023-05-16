@@ -1,38 +1,45 @@
-import { CodegenConfig } from '@graphql-codegen/cli';
+import { CodegenConfig } from "@graphql-codegen/cli";
 
 const config: CodegenConfig = {
-  schema: './schema/*.graphql',
+  schema: "./schema/*.graphql",
+  documents: "./schema/*.graphql",
   generates: {
-    './model/graphql-schema.ts': {
+    "./model/graphql-schema.ts": {
+      plugins: ["typescript"],
+      config: {
+        strictScalars: true,
+      },
+    },
+    "../../web/src/graphql/types-and-hooks.tsx": {
       plugins: [
-        'typescript',
-        {
-          add: {
-            content: 'import { AvailableVoices } from "./voices";',
-          },
-        },
+        "typescript",
+        "typescript-operations",
+        "typescript-react-apollo",
+        "typescript-apollo-client-helpers",
+        // {
+        //   add: {
+        //     content: 'import * from "@langapp/graphql";\n',
+        //   },
+        // },
       ],
       config: {
         strictScalars: true,
-        customTypesMapping: {
-          'StoryCreationMetadata.voice': 'AvailableVoices',
-          'CreateStoryInput.voice': 'AvailableVoices',
-        },
+        withHooks: true,
       },
     },
   },
   config: {
     scalars: {
-      AWSJSON: 'string',
-      AWSDate: 'string',
-      AWSTime: 'string',
-      AWSDateTime: 'string',
-      AWSTimestamp: 'number',
-      AWSEmail: 'string',
-      AWSURL: 'string',
-      AWSPhone: 'string',
-      AWSIPAddress: 'string',
-      AvailableVoices: 'AvailableVoices',
+      AWSJSON: "string",
+      AWSDate: "string",
+      AWSTime: "string",
+      AWSDateTime: "string",
+      AWSTimestamp: "number",
+      AWSEmail: "string",
+      AWSURL: "string",
+      AWSPhone: "string",
+      AWSIPAddress: "string",
+      AvailableVoices: "AvailableVoices",
     },
   },
 };

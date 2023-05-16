@@ -1,0 +1,52 @@
+query getStoryById($storyId: ID!) {
+  getStoryById(storyId: $storyId) {
+    assets {
+      audio {
+        speed
+        url
+        speechMarks {
+          end
+          start
+          time
+          type
+          value
+        }
+      }
+      text
+      translation
+    }
+    creationMetadata {
+      gramarOptions
+      language {
+        source
+        target
+      }
+      narrationStyle
+      specificWords
+      theme
+      voice
+    }
+    generationRequestDate
+    lastUpdate
+    status
+    storyId
+  }
+}
+mutation createStory(
+  $source: SupportedLanguages!,
+  $target: SupportedLanguages!,
+  $voice: String!,
+  $narrationStyle: NarrativeStyle = RANDOM,
+  $theme: StoryTheme = RANDOM,
+  $gramarOptions: [GrammarOptions!],
+  $specificWords: [String!]) {
+  createStory(story: {
+    gramarOptions: $gramarOptions,
+    language: {source: $source, target: $target},
+    narrationStyle: $narrationStyle,
+    specificWords: $specificWords,
+    theme: $theme,
+    voice: $voice}) {
+    storyId
+  }
+}

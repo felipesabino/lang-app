@@ -10,3 +10,6 @@ cdk.out
 # AWS SAM
 .sam
 .aws-sam
+
+# this is replaced when CDK command is executed on root workspace
+yarn.lock
