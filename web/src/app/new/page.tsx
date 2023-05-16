@@ -1,23 +1,25 @@
-"use client"
+"use client";
 
 //@ts-ignore
 import { registerCoreBlocks } from "@quillforms/react-renderer-utils";
-import { Form, useFieldAnswer} from "@quillforms/renderer-core";
+import { Form, useFieldAnswer } from "@quillforms/renderer-core";
 import "@quillforms/renderer-core/build-style/style.css";
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getFormSteps, FormStepsProps } from "./components/form-steps";
+import { Voices } from "@/graphql/voices";
+import "./components/cutom-block-voices";
 
 registerCoreBlocks();
 
 const NewStoryForm = () => {
-
   const [formCompleted, setFormCompleted] = useState(false);
-  const shouldStoryBeCustomized= useFieldAnswer("story-customized");
+  const shouldStoryBeCustomized = useFieldAnswer("story-customized");
+  const currentTargetLanguage = useFieldAnswer("language");
 
   useEffect(() => {
     if (formCompleted) {
-      redirect('/story');
+      redirect("/story");
     }
   });
 
@@ -30,18 +32,19 @@ const NewStoryForm = () => {
           blocks: getFormSteps({
             //@ts-ignore
             shouldStoryBeCustomized: shouldStoryBeCustomized?.includes("Yes"),
+            currentTargetLanguage: currentTargetLanguage ? (currentTargetLanguage as any[])[0].toString() : "",
           }),
           settings: {
             animationDirection: "horizontal",
             disableWheelSwiping: false,
             disableNavigationArrows: false,
-            disableProgressBar: false
+            disableProgressBar: false,
           },
           theme: {
             font: "Roboto",
             buttonsBgColor: "#9b51e0",
             logo: {
-              src: ""
+              src: "",
             },
             questionsColor: "#000",
             answersColor: "#0aa7c2",
@@ -50,12 +53,11 @@ const NewStoryForm = () => {
             errorsFontColor: "#fff",
             errorsBgColor: "#f00",
             progressBarFillColor: "#000",
-            progressBarBgColor: "#ccc"
+            progressBarBgColor: "#ccc",
           },
           messages: {
-            "block.defaultThankYouScreen.label":
-              "Please wait while we generate your story!"
-          }
+            "block.defaultThankYouScreen.label": "Please wait while we generate your story!",
+          },
         }}
         applyLogic={false}
         isPreview={false}

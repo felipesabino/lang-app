@@ -39,6 +39,7 @@ const config: CodegenConfig = {
       AWSURL: "string",
       AWSPhone: "string",
       AWSIPAddress: "string",
+      AvailableVoices: "AvailableVoices",
     },
   },
 };
