@@ -2,7 +2,14 @@
 
 import "./globals.css";
 import { UserHeader } from "./components/UserHeader";
-import { ApolloProvider, ApolloClient, InMemoryCache, HttpLink, ApolloLink, createHttpLink } from "@apollo/client";
+import {
+  ApolloProvider,
+  ApolloClient,
+  InMemoryCache,
+  ApolloLink,
+  createHttpLink,
+  defaultDataIdFromObject,
+} from "@apollo/client";
 import { createAuthLink } from "aws-appsync-auth-link";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -23,7 +30,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   const client = new ApolloClient({
     link,
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      dataIdFromObject(responseObject) {
+        switch (responseObject.__typename) {
+          case "Story":
+            return `Story:${responseObject.storyId}`;
+          default:
+            return defaultDataIdFromObject(responseObject);
+        }
+      },
+    }),
   });
 
   return (

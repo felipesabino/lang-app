@@ -29,14 +29,17 @@ export const moreInfoMachine = createMachine<MachineContext>(
           },
           onError: "failure",
         },
+        on: {
+          DISMISS: "idle",
+        },
       },
       successful: {
         // uncomment if there is a need for an intermediate state to dismiss the more info panel
         //  in case there is a modal or side panel, for example. otherwise we just sent the state to 'waiting'
-        // on: {
-        //   DISMISS: "idle",
-        // },
-        always: "waiting",
+        on: {
+          DISMISS: "idle",
+        },
+        // always: "waiting",
       },
       failure: {
         entry: "increment-retries",
@@ -50,6 +53,10 @@ export const moreInfoMachine = createMachine<MachineContext>(
             target: "pending",
             actions: ["reset-retries", "select-text"],
           },
+          DISMISS: {
+            target: "idle",
+            actions: "reset-retries",
+          },
         },
       },
       waiting: {
@@ -58,6 +65,7 @@ export const moreInfoMachine = createMachine<MachineContext>(
             target: "pending",
             actions: "select-text",
           },
+          DISMISS: "idle",
         },
       },
       idle: {
