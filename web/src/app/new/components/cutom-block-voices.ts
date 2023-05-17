@@ -1,5 +1,5 @@
 import { registerBlockType } from "@quillforms/blocks";
-import display from "./custom-block-voices-display";
+import { MyCustomBlockDisplay as display } from "./custom-block-voices-display";
 
 registerBlockType("custom-block-voices", {
   supports: {
