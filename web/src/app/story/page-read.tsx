@@ -5,6 +5,8 @@ import { useState } from "react";
 import classNames from "classnames";
 import { TextContext } from "../api/story/text-context/[slug]/route";
 import { Paragraph, ParagraphSplitter } from "./components/ParagraphSpitter";
+import { moreInfoMachine } from "./workflow/more-info-machine";
+import { useMachine } from "@xstate/react";
 
 interface Mark {
   type: "word" | "sentence";
@@ -27,12 +29,22 @@ export interface StoryTextBlockProps {
 }
 
 export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElapsed }) => {
-  const [selectedText, setSelectedText] = useState("");
-  const [textExplanationIsLoading, setTextExplanationIsLoading] = useState(false);
-  const [textExplanation, setTextExplanation] = useState<TextContext>({
-    text: "",
-    explanation: "",
+  const [machine] = useState(() => moreInfoMachine.withContext({ story: story, selectedText: "" }));
+
+  const [state, send] = useMachine(machine, {
+    devTools: true,
+    services: {
+      "get-text-info": (context, event) => {
+        return Promise.resolve("Text Info!");
+      },
+    },
   });
+  async function getSelectedTextInfo(selectionInfo: SelectionInfo) {
+    send("SELECT", { data: selectionInfo.selectedText });
+  }
+  async function retryGetSelectedTextInfo() {
+    send("RETRY");
+  }
 
   const marks = story.marks.filter((mark) => mark.type === "word");
 
@@ -42,17 +54,6 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElaps
     mark: marks.findLast((mark) => mark.time < timeElapsed),
   };
 
-  async function onButtonClick(selectionInfo: SelectionInfo) {
-    // @ts-ignore
-    setSelectedText(selectionInfo.selectedText);
-    setTextExplanationIsLoading(true);
-    await fetch(`/api/story/text-context/${selectionInfo.selectedText}`)
-      .then((response) => response.json())
-      .then((data) => {
-        setTextExplanation(data);
-        setTextExplanationIsLoading(false);
-      });
-  }
   const renderDecoratedText = (paragraph: Paragraph, mark: Mark | undefined) => {
     if (mark && paragraph.bufferEnd < mark.start) {
       return (
@@ -104,7 +105,7 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElaps
       <div className="overflow-auto p-8 bg-slate-50 rounded-xl  mb-8 divide-y divide-dashed">
         {toRender.text.map((item, index) => (
           <div key={"p-" + index}>
-            <TextSelectionObserver onButtonClick={onButtonClick}>
+            <TextSelectionObserver onButtonClick={getSelectedTextInfo}>
               {renderDecoratedText(item, toRender.mark)}
             </TextSelectionObserver>
             <details className="pb-2">
@@ -117,42 +118,27 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElaps
         ))}
       </div>
       <div className=" overflow-auto p-8 bg-slate-50 rounded-xl mb-8">
-        <div
-          className={classNames({
-            hidden: selectedText.length > 0,
-          })}
-        >
+        {state.matches("idle") && (
           <p className="text-gray-800">Select some text if you want to see more information about it</p>
-        </div>
-        <div
-          className={classNames({
-            "pt-4": true,
-            hidden: selectedText.length === 0,
-          })}
-        >
-          <p className="text-gray-800">Selected text: &quot;{selectedText}&quot;</p>
-        </div>
-        <div
-          className={classNames({
-            "pt-4": true,
-            hidden: !textExplanationIsLoading,
-            "animate-pulse": true,
-          })}
-        >
-          <p className="text-gray-800">Building explanation...</p>
-        </div>
-        <div
-          className={classNames({
-            "pt-4 text-gray-800": true,
-            hidden: textExplanationIsLoading,
-          })}
-        >
-          {textExplanation.explanation.split("\n").map((paragraph, index) => (
+        )}
+        {["pending", "successful", "waiting"].some(state.matches) && (
+          <p className="text-gray-800">Selected text: &quot;{state.context.selectedText}&quot;</p>
+        )}
+        {state.matches("pending") && <p className="text-gray-800">Building explanation...</p>}
+        {["successful", "waiting"].some(state.matches) &&
+          state.context.textInfo.split("\n").map((paragraph: string, index: number) => (
             <p className="pt-2" key={"exp-" + index}>
               {paragraph}
             </p>
           ))}
-        </div>
+        {state.matches("failure") && (
+          <p className="text-gray-800">
+            Error loading info{" "}
+            <a href="#" onClick={retryGetSelectedTextInfo}>
+              Retry
+            </a>
+          </p>
+        )}
       </div>
     </div>
   );

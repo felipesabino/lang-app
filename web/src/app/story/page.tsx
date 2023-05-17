@@ -1,25 +1,25 @@
 "use client";
 
 import React, { useState } from "react";
-import { AudioPlayer } from "./components/AudioPlayer";
-import { Story, StoryTextBlock } from "./storyTextBlock";
+import { AudioPlayer } from "./components/audio-player/AudioPlayer";
+import { Story, StoryTextBlock } from "./page-read";
 import { GetStoryByIdDocument, GetStoryByIdQuery } from "@/graphql/types-and-hooks";
 import { useMachine } from "@xstate/react";
-import { rootMachine } from "./workflow/root-machine";
+import { pageMachine } from "./workflow/page-machine";
 import { useApolloClient, ApolloQueryResult } from "@apollo/client";
 
 export default function StoryPage() {
   const [timElapsed, setTimeElapsed] = useState(0);
   const storyId = "adec05b1-a6b3-455e-935a-bd62a6ba2b6d";
-  console.log("AAAAAA");
 
   const client = useApolloClient();
 
-  const [machine] = useState(() => rootMachine.withContext({ storyId: storyId, timeElapsed: 0 }));
+  const [machine] = useState(() => pageMachine.withContext({ storyId: storyId }));
 
   const [state, send] = useMachine(machine, {
+    devTools: true,
     services: {
-      "fetch-story": async (context, event) => {
+      fetch: async (context, event) => {
         return client
           .query<GetStoryByIdQuery>({
             query: GetStoryByIdDocument,
@@ -56,14 +56,14 @@ export default function StoryPage() {
 
   return (
     <div className="">
-      {state.matches("story-pending") && <div>Loading...</div>}
-      {state.matches("story-data-ready") && (
+      {state.matches("pending") && <div>Loading...</div>}
+      {state.matches("successful") && (
         <>
           <StoryTextBlock story={state.context.story!} timeElapsed={timElapsed} />
           <AudioPlayer audioSrc={state.context.story!.audio} timeUpdated={setTimeElapsed} />
         </>
       )}
-      {state.matches("story-failure") && <>Error</>}
+      {state.matches("failure") && <>Error</>}
     </div>
   );
 }
