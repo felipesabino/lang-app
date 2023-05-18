@@ -32,6 +32,14 @@ query getStoryById($storyId: ID!) {
     storyId
   }
 }
+
+query getStoryStatus($storyId: ID!) {
+  getStoryStatus(storyId: $storyId) {
+    status
+  }
+}
+
+
 mutation createStory(
   $source: SupportedLanguages!,
   $target: SupportedLanguages!,

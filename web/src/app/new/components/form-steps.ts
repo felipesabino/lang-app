@@ -52,7 +52,7 @@ export const getFormSteps = (options: FormStepsProps): FormBlocks => {
       attributes: {
         label: "Select the voice you would like your audio to read on",
         description: "For a glimpse, click play button to preview",
-        required: false,
+        required: true,
         items: getVoicesFormMetadata(options.currentTargetLanguage),
       },
     },

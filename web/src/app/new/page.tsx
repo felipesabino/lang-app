@@ -21,13 +21,13 @@ import "./components/cutom-block-voices";
 registerCoreBlocks();
 
 const NewStoryForm = () => {
-  const [formCompleted, setFormCompleted] = useState(false);
+  const [newStoryId, setNewStoryId] = useState<string | null>(null);
   const shouldStoryBeCustomized = useFieldAnswer("story-customized");
   const currentTargetLanguage = useFieldAnswer("language");
 
   useEffect(() => {
-    if (formCompleted) {
-      redirect("/story");
+    if (newStoryId) {
+      redirect(`/waiting/${newStoryId}`);
     }
   });
 
@@ -37,7 +37,7 @@ const NewStoryForm = () => {
     const { answers } = data;
     const isCustomized = answers["story-customized"].value[0] === "Yes";
 
-    return client
+    const storyId = await client
       .mutate({
         mutation: CreateStoryDocument,
         variables: {
@@ -52,11 +52,9 @@ const NewStoryForm = () => {
       })
       .then((result: FetchResult<CreateStoryMutation>): string => {
         return result.data!.createStory.storyId;
-      })
-      .then((storyId: string) => {
-        console.log(storyId);
-        redirect(`/story/${storyId}`);
       });
+    console.log(storyId);
+    setNewStoryId(storyId);
   };
 
   return (
@@ -75,6 +73,8 @@ const NewStoryForm = () => {
             disableWheelSwiping: false,
             disableNavigationArrows: false,
             disableProgressBar: false,
+            showQuestionsNumbers: false,
+            showLettersOnAnswers: false,
           },
           theme: {
             font: "Roboto",
@@ -97,15 +97,16 @@ const NewStoryForm = () => {
         }}
         applyLogic={false}
         isPreview={false}
-        onSubmit={async (data, { completeForm, setIsSubmitting }) => {
+        onSubmit={async (data, { completeForm, setIsSubmitting, setSubmissionErr }) => {
           console.log(data);
-          await createStory(data);
-
-          setTimeout(() => {
+          try {
+            await createStory(data);
             setIsSubmitting(false);
             completeForm();
-            setFormCompleted(true);
-          }, 500);
+          } catch (e) {
+            console.log(e);
+            setSubmissionErr("Error creating your story, please try again.");
+          }
         }}
       />
     </div>

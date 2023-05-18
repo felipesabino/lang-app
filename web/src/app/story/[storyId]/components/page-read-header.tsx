@@ -1,8 +1,9 @@
 import { capitalCase, sentenceCase } from "change-case";
-import { Story } from "@/graphql/types-and-hooks";
+import { AudioSpeed, Story } from "@/graphql/types-and-hooks";
 
 export interface StoryTextBlockHeaderProps {
   story: Story;
+  audioSpeedSelected: AudioSpeed | string;
 }
 
 export function StoryTextBlockHeader(props: StoryTextBlockHeaderProps) {
@@ -46,6 +47,10 @@ export function StoryTextBlockHeader(props: StoryTextBlockHeaderProps) {
           {story.creationMetadata.specificWords?.map((item) => `"${sentenceCase(item)}"`).join(", ")}
         </div>
       )}
+      <div className="col-span-2 max-sm:col-span-1">
+        <span className="font-bold">Reading Speed: </span>
+        {sentenceCase(props.audioSpeedSelected || "")}
+      </div>
     </div>
   );
 }

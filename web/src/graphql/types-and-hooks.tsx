@@ -187,6 +187,13 @@ export type GetStoryByIdQueryVariables = Exact<{
 
 export type GetStoryByIdQuery = { __typename?: 'Query', getStoryById?: { __typename?: 'Story', generationRequestDate: number, lastUpdate: number, status: StoryStatusType, storyId: string, assets: { __typename?: 'StoryAssets', text: string, translation: string, audio: Array<{ __typename?: 'StoryAudioAsset', speed: AudioSpeed, url: string, speechMarks: Array<{ __typename?: 'SpeechMark', end: number, start: number, time: number, type: string, value: string }> }> }, creationMetadata: { __typename?: 'StoryCreationMetadata', gramarOptions?: Array<GrammarOptions> | null, narrationStyle: NarrativeStyle, specificWords?: Array<string> | null, theme: StoryTheme, voice: string, language: { __typename?: 'LanguageOutput', source: SupportedLanguages, target: SupportedLanguages } } } | null };
 
+export type GetStoryStatusQueryVariables = Exact<{
+  storyId: Scalars['ID'];
+}>;
+
+
+export type GetStoryStatusQuery = { __typename?: 'Query', getStoryStatus?: { __typename?: 'StoryStatus', status: StoryStatusType } | null };
+
 export type CreateStoryMutationVariables = Exact<{
   source: SupportedLanguages;
   target: SupportedLanguages;
@@ -265,6 +272,41 @@ export function useGetStoryByIdLazyQuery(baseOptions?: Apollo.LazyQueryHookOptio
 export type GetStoryByIdQueryHookResult = ReturnType<typeof useGetStoryByIdQuery>;
 export type GetStoryByIdLazyQueryHookResult = ReturnType<typeof useGetStoryByIdLazyQuery>;
 export type GetStoryByIdQueryResult = Apollo.QueryResult<GetStoryByIdQuery, GetStoryByIdQueryVariables>;
+export const GetStoryStatusDocument = gql`
+    query getStoryStatus($storyId: ID!) {
+  getStoryStatus(storyId: $storyId) {
+    status
+  }
+}
+    `;
+
+/**
+ * __useGetStoryStatusQuery__
+ *
+ * To run a query within a React component, call `useGetStoryStatusQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetStoryStatusQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetStoryStatusQuery({
+ *   variables: {
+ *      storyId: // value for 'storyId'
+ *   },
+ * });
+ */
+export function useGetStoryStatusQuery(baseOptions: Apollo.QueryHookOptions<GetStoryStatusQuery, GetStoryStatusQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetStoryStatusQuery, GetStoryStatusQueryVariables>(GetStoryStatusDocument, options);
+      }
+export function useGetStoryStatusLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetStoryStatusQuery, GetStoryStatusQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetStoryStatusQuery, GetStoryStatusQueryVariables>(GetStoryStatusDocument, options);
+        }
+export type GetStoryStatusQueryHookResult = ReturnType<typeof useGetStoryStatusQuery>;
+export type GetStoryStatusLazyQueryHookResult = ReturnType<typeof useGetStoryStatusLazyQuery>;
+export type GetStoryStatusQueryResult = Apollo.QueryResult<GetStoryStatusQuery, GetStoryStatusQueryVariables>;
 export const CreateStoryDocument = gql`
     mutation createStory($source: SupportedLanguages!, $target: SupportedLanguages!, $voice: String!, $narrationStyle: NarrativeStyle = RANDOM, $theme: StoryTheme = RANDOM, $gramarOptions: [GrammarOptions!], $specificWords: [String!]) {
   createStory(

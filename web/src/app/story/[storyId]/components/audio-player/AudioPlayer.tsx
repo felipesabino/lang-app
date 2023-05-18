@@ -55,6 +55,9 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = forwardRef(
 
           const audioObj = new Audio(audioUrl);
           const metadata = await bindEventsToAudioObject(audioObj);
+
+          audioIdUpdated && audioIdUpdated(context.audioId);
+
           return {
             audioObject: audioObj,
             audioId: context.audioId,

@@ -97,7 +97,7 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElaps
     <div className="text-reading font-mono relative mb-10 flex flex-col md:flex-row min-h-screen place-content-center">
       <div className="bg-white basis-full max-w-4xl">
         <div className="overflow-auto p-8 mb-8 divide-y divide-dashed ">
-          <StoryTextBlockHeader story={story} />
+          <StoryTextBlockHeader story={story} audioSpeedSelected={audioSpeedSelected} />
           {toRender.text.map((item, index) => (
             <div key={"p-" + index}>
               <TextSelectionObserver onButtonClick={getSelectedTextInfo}>
