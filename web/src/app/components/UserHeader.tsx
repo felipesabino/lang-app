@@ -8,7 +8,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({ pageTitle, name, profile
   return (
     <header className="sticky top-0 flex flex-wrap sm:justify-start sm:flex-nowrap z-50 w-full bg-white text-sm py-4 border-b-2">
       <nav className="max-w-[85rem] w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between" aria-label="Global">
-        <a className="flex-none text-xl font-semibold" href="#">
+        <a className="max-md:hidden  flex-none text-xl font-semibold " href="#">
           Product Name
         </a>
         <div className="flex flex-row items-center gap-5 mt-5 sm:justify-end sm:mt-0 sm:pl-5">

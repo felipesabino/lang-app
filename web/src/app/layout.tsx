@@ -44,7 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="en">
-      <body className="selection:bg-pink-300">
+      <body className="selection:bg-highlight">
         <div>
           <ApolloProvider client={client}>
             <UserHeader pageTitle="New Story" name="The User" />

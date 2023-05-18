@@ -7,6 +7,11 @@ module.exports = {
   ],
   theme: {
     extend: {
+
+      colors: {
+        reading:  '#3a4649',
+        highlight: '#e6fc88',
+      },
       animation: {
         "waiting-room": "waiting-room 14s infinite"
       },

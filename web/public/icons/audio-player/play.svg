@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+  <circle cx="25" cy="25" r="23" stroke="white" stroke-width="2" fill="none" >
+    <animate attributeName="fill" values="none;#db2777" begin="path1.mouseover" dur="0.3s" fill="freeze"/>
+    <animate attributeName="fill" values="#db2777;none" begin="path1.mouseout" dur="0.3s" fill="freeze"/>
+</circle>
+  <polygon points="17,12 38,25 17,38" fill="white" />
+</svg>

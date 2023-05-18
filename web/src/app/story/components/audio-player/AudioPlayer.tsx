@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, forwardRef } from "react";
-import { PlayIcon, ForwardIcon, BackwardIcon, PauseIcon } from "@heroicons/react/24/solid";
 import classNames from "classnames";
 import { useMachine } from "@xstate/react";
 import { audioPlayerMachine } from "./audio-player-machine";
@@ -95,39 +94,40 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = forwardRef(
     return (
       <div className="fixed bottom-0 h-16 grid place-items-center w-full bg-gray-800 border-t-2 border-gray-300">
         <ul className="list-none w-max max-w-md flex items-center justify-stretch gap-8">
-          <li onClick={() => send("BACKWARD")}>
-            <BackwardIcon className="h-6 w-6 text-pink-300" />
+          <li>
+            <button onClick={() => send("BACKWARD")}>
+              <img src="/icons/audio-player/backward.svg" className="h-6 w-6 cursor-pointer" />
+            </button>
           </li>
-          <li onClick={() => send("PLAY")}>
-            <PlayIcon
-              className={classNames({
-                "h-6 w-6": true,
-                "text-pink-300": ["idle", "playable.paused"].some(state.matches),
-                "text-gray-300": !["idle", "playable.paused"].some(state.matches),
-              })}
-            />
-          </li>
-          <li onClick={() => send("PAUSE")}>
-            <PauseIcon
-              className={classNames({
-                "h-6 w-6": true,
-                "text-pink-300": state.matches("playable.playing"),
-                "text-gray-300": !state.matches("playable.playing"),
-              })}
-            />
-          </li>
-          <li onClick={() => send("FORWARD")}>
-            <ForwardIcon className="h-6 w-6 text-pink-300" />
+          {!state.matches("playable.playing") && (
+            <li>
+              <button onClick={() => send("PLAY")}>
+                <img src="/icons/audio-player/play.svg" className="h-6 w-6 cursor-pointer" />
+              </button>
+            </li>
+          )}
+          {state.matches("playable.playing") && (
+            <li>
+              <button onClick={() => send("PAUSE")}>
+                <img src="/icons/audio-player/pause.svg" className="h-6 w-6 cursor-pointer" />
+              </button>
+            </li>
+          )}
+          <li>
+            <button onClick={() => send("FORWARD")}>
+              <img src="/icons/audio-player/forward.svg" className="h-6 w-6 cursor-pointer" />
+            </button>
           </li>
 
           <span className="text-gray-300">
-            {state.context.description}
+            Speed: {state.context.description}
+            <br />
             {Object.keys(audioCollection)
               .filter((id) => id !== state.context.audioId) // exclude the current audio (it will be shown as a link
               .map((audioId) => (
-                <li key={audioId} onClick={() => send({ type: "CHANGE_SOURCE", data: { audioId } })}>
+                <a href="#" key={audioId} onClick={() => send({ type: "CHANGE_SOURCE", data: { audioId } })}>
                   (Change to {audioCollection[audioId].description})
-                </li>
+                </a>
               ))}
           </span>
         </ul>
