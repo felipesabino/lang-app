@@ -43,7 +43,7 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElaps
   const toRender = {
     text: ParagraphSplitter(story.assets.text),
     translation: ParagraphSplitter(story.assets.translation),
-    //@ts-expect-error
+    //@ts-ignore
     mark: marks.findLast((mark) => mark.time < timeElapsed) as SpeechMark | undefined,
   };
 
