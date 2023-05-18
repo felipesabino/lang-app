@@ -9,10 +9,11 @@ import { pageMachine } from "./workflow/page-machine";
 import { useApolloClient, ApolloQueryResult } from "@apollo/client";
 import { Story, AudioSpeed } from "@/graphql/types-and-hooks";
 
-export default function StoryPage() {
+export default function StoryPage(context: { params: { storyId: string } }) {
+  const storyId = context.params.storyId;
+
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [audioSpeed, setAudioSpeed] = useState(AudioSpeed.Normal.toString());
-  const storyId = "adec05b1-a6b3-455e-935a-bd62a6ba2b6d";
 
   const client = useApolloClient();
 

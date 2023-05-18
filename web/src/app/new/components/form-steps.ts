@@ -1,6 +1,6 @@
 import { FormBlock, FormBlocks } from "@quillforms/types/build-types";
 import { VoiceEnglish, VoiceFrench, VoiceItalian, VoicePortuguese } from "@/graphql/voices";
-
+import { StoryTheme, GrammarOptions, SupportedLanguages, NarrativeStyle } from "@/graphql/types-and-hooks";
 export interface FormStepsProps {
   shouldStoryBeCustomized: boolean;
   currentTargetLanguage: string;
@@ -14,10 +14,6 @@ export const getFormSteps = (options: FormStepsProps): FormBlocks => {
       attributes: {
         label: "Let's create a short story",
         description: "We will ask a couple of settings to create a story more suited for your language learning needs",
-        // attachment: {
-        //   type: "image",
-        //   url: "/people.png"
-        // },
         layout: "stack",
         attachmentMaxWidth: "500px",
       },
@@ -29,27 +25,23 @@ export const getFormSteps = (options: FormStepsProps): FormBlocks => {
         label: "What language do you want your story to be generated",
         required: true,
         multiple: false,
-        // attachment: {
-        //   type: "image",
-        //   url: "/flags.png"
-        // },
         layout: "stack",
         choices: [
           {
             label: "English",
-            value: "en",
+            value: SupportedLanguages.En,
           },
           {
             label: "Portuguese",
-            value: "pt",
+            value: SupportedLanguages.Pt,
           },
           {
             label: "Italian",
-            value: "it",
+            value: SupportedLanguages.It,
           },
           {
             label: "French",
-            value: "fr",
+            value: SupportedLanguages.Fr,
           },
         ],
       },
@@ -59,8 +51,8 @@ export const getFormSteps = (options: FormStepsProps): FormBlocks => {
       id: "voice",
       attributes: {
         label: "Select the voice you would like your audio to read on",
-        description: "For a glimpse, click on preview",
-        required: false,
+        description: "For a glimpse, click play button to preview",
+        required: true,
         items: getVoicesFormMetadata(options.currentTargetLanguage),
       },
     },
@@ -94,121 +86,109 @@ export const getFormSteps = (options: FormStepsProps): FormBlocks => {
               defaultValue: "Random",
               required: true,
               multiple: false,
-              // attachment: {
-              //   type: "image",
-              //   url: "/books.png"
-              // },
               layout: "stack",
               choices: [
                 {
                   label: "Random",
-                  value: "RANDOM",
+                  value: StoryTheme.Random,
                 },
                 {
                   label: "Adventure",
-                  value: "ADVENTURE",
+                  value: StoryTheme.Adventure,
                 },
                 {
                   label: "Romance",
-                  value: "ROMANCE",
+                  value: StoryTheme.Romance,
                 },
                 {
                   label: "Fantasy",
-                  value: "FANTASY",
+                  value: StoryTheme.Fantasy,
                 },
                 {
                   label: "Sci-Fi",
-                  value: "SCIFI",
+                  value: StoryTheme.Scifi,
                 },
                 {
                   label: "Drama",
-                  value: "DRAMA",
+                  value: StoryTheme.Drama,
                 },
                 {
                   label: "Young Adult",
-                  value: "YOUNGADULT",
+                  value: StoryTheme.Youngadult,
                 },
                 {
                   label: "Children",
-                  value: "CHILDREN",
+                  value: StoryTheme.Children,
                 },
               ],
             },
           } as FormBlock,
           {
             name: "multiple-choice",
-            id: "narrative-style",
+            id: "narration-style",
             attributes: {
               label: "What about a narrative style, would you like to use a specific one?",
               defaultValue: "RANDOM",
               required: true,
               multiple: false,
-              // attachment: {
-              //   type: "image",
-              //   url: "/read.png"
-              // },
               layout: "stack",
               choices: [
                 {
                   label: "Random",
-                  value: "RANDOM",
+                  value: NarrativeStyle.Random,
                 },
                 {
                   label: "First Person Narrative",
-                  value: "FIRSTPERSON",
+                  value: NarrativeStyle.Firstperson,
                 },
                 {
                   label: "Third Person Narrative",
-                  value: "THIRDPERSON",
+                  value: NarrativeStyle.Thirdperson,
                 },
                 {
                   label: "A Letter",
-                  value: "LETTER",
+                  value: NarrativeStyle.Letter,
                 },
                 {
                   label: "New Yorker Style",
-                  value: "NEWYORKER",
+                  value: NarrativeStyle.Newyorker,
                 },
               ],
             },
           } as FormBlock,
           {
             name: "multiple-choice",
-            id: "gramma-options",
+            id: "grammar-options",
             attributes: {
               required: false,
               multiple: true,
               verticalAlign: false,
               label: "Are there specific Grammar Options you want to be used in the Story?",
-              // attachment: {
-              //   type: "image",
-              //   url: "/grammar.png"
-              // },
               layout: "stack",
               choices: [
                 {
                   label: "Past Tense",
-                  value: "PASTTENSE",
+                  value: GrammarOptions.Pasttense,
                 },
                 {
                   label: "Present Tense",
-                  value: "PRESENTTENSE",
+                  value: GrammarOptions.Presenttense,
                 },
                 {
                   label: "Future Tense",
-                  value: "FUTURETENSE",
+                  value: GrammarOptions.Futuretense,
                 },
                 {
                   label: "Past Continuous",
-                  value: "PASTCONTINUOUS",
+                  value: GrammarOptions.Pastcontinuous,
                 },
                 {
                   label: "Present Continuous",
-                  value: "PRESENTCONTINUOUS",
+                  value: GrammarOptions.Presentcontinuous,
                 },
                 {
                   label: "Future Continuous",
-                  value: "FUTURECONTINUOUS",
+                  value: GrammarOptions.Futurecontinuous,
                 },
               ],
             },
@@ -218,10 +198,6 @@ export const getFormSteps = (options: FormStepsProps): FormBlocks => {
             id: "specific-words",
             attributes: {
               required: false,
-              // attachment: {
-              //   type: "image",
-              //   url: "/words.png"
-              // },
               layout: "stack",
               label: "Are there any words or a short sentence you would like to have included in your story?",
               description:
@@ -248,7 +224,6 @@ const getVoicesFormMetadata = (language: string): any[] => {
   if (!language) return [];
 
   const getValuesFromType = (type: any) => {
-    console.log(type, Object.keys(type));
     return Object.keys(type).map((key) => {
       return {
         value: key,

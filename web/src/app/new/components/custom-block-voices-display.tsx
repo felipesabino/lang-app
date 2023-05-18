@@ -102,14 +102,14 @@ export const MyCustomBlockDisplay = (props: any) => {
                   }}
                 />
               </div>
-              <a
-                href="#"
+              <button
+                className="mt-2 place-items-center inline-flex justify-center items-center cursor-pointer"
                 onClick={() => {
                   playPreview(item.audioUrl);
                 }}
               >
-                preview
-              </a>
+                <img src="/icons/audio-player/play-black.svg" alt="play" className="w-6 h-6" />
+              </button>
             </li>
           );
         })}

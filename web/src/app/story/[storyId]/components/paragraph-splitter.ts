@@ -4,7 +4,6 @@ export interface Word {
   bufferEnd: number;
 }
 
-
 export interface Paragraph {
   words: Word[];
   text: string;
@@ -21,7 +20,7 @@ export const ParagraphSplitter = (text: string): Paragraph[] => {
   return text
     .split(lineBreakChar)
     .reduce((accumulator, currentValue, currentIndex) => {
-      const bufferStart = currentIndex === 0 ? 0 : accumulator[currentIndex - 1].bufferEnd + lineBreakSize
+      const bufferStart = currentIndex === 0 ? 0 : accumulator[currentIndex - 1].bufferEnd + lineBreakSize;
       accumulator.push({
         words: WordSplitter(currentValue, bufferStart),
         text: currentValue,
@@ -30,20 +29,18 @@ export const ParagraphSplitter = (text: string): Paragraph[] => {
       });
       return accumulator;
     }, [] as Paragraph[])
-    .filter(paragraph => paragraph.text.trim().length > 0)
-
-}
+    .filter((paragraph) => paragraph.text.trim().length > 0);
+};
 
 const WordSplitter = (text: string, paragraphBufferStart: number): Word[] => {
-  return text
-    .split(spaceChar)
-    .reduce((accumulator, currentValue, currentIndex) => {
-      const bufferStart = currentIndex === 0 ? paragraphBufferStart : accumulator[currentIndex - 1].bufferEnd + lineBreakSize
-      accumulator.push({
-        text: currentValue,
-        bufferStart,
-        bufferEnd: new TextEncoder().encode(currentValue).length + bufferStart,
-      });
-      return accumulator;
-    }, [] as Word[]);
-}
+  return text.split(spaceChar).reduce((accumulator, currentValue, currentIndex) => {
+    const bufferStart =
+      currentIndex === 0 ? paragraphBufferStart : accumulator[currentIndex - 1].bufferEnd + spaceCharSize;
+    accumulator.push({
+      text: currentValue,
+      bufferStart,
+      bufferEnd: new TextEncoder().encode(currentValue).length + bufferStart,
+    });
+    return accumulator;
+  }, [] as Word[]);
+};

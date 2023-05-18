@@ -6,22 +6,56 @@ import { Form, useFieldAnswer } from "@quillforms/renderer-core";
 import "@quillforms/renderer-core/build-style/style.css";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getFormSteps, FormStepsProps } from "./components/form-steps";
-import { Voices } from "@/graphql/voices";
+import { getFormSteps } from "./components/form-steps";
+import { TVoices } from "@/graphql/voices";
+import { useApolloClient, FetchResult } from "@apollo/client";
+import {
+  CreateStoryDocument,
+  CreateStoryMutation,
+  CreateStoryMutationVariables,
+  SupportedLanguages,
+  StoryTheme,
+} from "@/graphql/types-and-hooks";
 import "./components/cutom-block-voices";
 
 registerCoreBlocks();
 
 const NewStoryForm = () => {
-  const [formCompleted, setFormCompleted] = useState(false);
+  const [newStoryId, setNewStoryId] = useState<string | null>(null);
   const shouldStoryBeCustomized = useFieldAnswer("story-customized");
   const currentTargetLanguage = useFieldAnswer("language");
 
   useEffect(() => {
-    if (formCompleted) {
-      redirect("/story");
+    if (newStoryId) {
+      redirect(`/waiting/${newStoryId}`);
     }
   });
+
+  const client = useApolloClient();
+
+  const createStory = async (data: any) => {
+    const { answers } = data;
+    const isCustomized = answers["story-customized"].value[0] === "Yes";
+
+    const storyId = await client
+      .mutate({
+        mutation: CreateStoryDocument,
+        variables: {
+          voice: answers.voice.value as TVoices,
+          target: answers.language.value[0] as SupportedLanguages,
+          source: SupportedLanguages.En,
+          theme: isCustomized ? answers.theme.value[0] : StoryTheme.Random,
+          narrationStyle: isCustomized ? answers["narration-style"].value[0] : "",
+          specificWords: isCustomized ? answers["specific-words"].value : "",
+          gramarOptions: isCustomized ? answers["grammar-options"].value : "",
+        } satisfies CreateStoryMutationVariables,
+      })
+      .then((result: FetchResult<CreateStoryMutation>): string => {
+        return result.data!.createStory.storyId;
+      });
+    console.log(storyId);
+    setNewStoryId(storyId);
+  };
 
   return (
     <div style={{ width: "100%", height: "100vh" }}>
@@ -39,6 +73,8 @@ const NewStoryForm = () => {
             disableWheelSwiping: false,
             disableNavigationArrows: false,
             disableProgressBar: false,
+            showQuestionsNumbers: false,
+            showLettersOnAnswers: false,
           },
           theme: {
             font: "Roboto",
@@ -61,13 +97,16 @@ const NewStoryForm = () => {
         }}
         applyLogic={false}
         isPreview={false}
-        onSubmit={(data, { completeForm, setIsSubmitting }) => {
-          setTimeout(() => {
+        onSubmit={async (data, { completeForm, setIsSubmitting, setSubmissionErr }) => {
+          console.log(data);
+          try {
+            await createStory(data);
             setIsSubmitting(false);
             completeForm();
-            console.log(data);
-            setFormCompleted(true);
-          }, 500);
+          } catch (e) {
+            console.log(e);
+            setSubmissionErr("Error creating your story, please try again.");
+          }
         }}
       />
     </div>
