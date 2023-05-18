@@ -6,8 +6,16 @@ import { Form, useFieldAnswer } from "@quillforms/renderer-core";
 import "@quillforms/renderer-core/build-style/style.css";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getFormSteps, FormStepsProps } from "./components/form-steps";
-import { Voices } from "@/graphql/voices";
+import { getFormSteps } from "./components/form-steps";
+import { TVoices } from "@/graphql/voices";
+import { useApolloClient, FetchResult } from "@apollo/client";
+import {
+  CreateStoryDocument,
+  CreateStoryMutation,
+  CreateStoryMutationVariables,
+  SupportedLanguages,
+  StoryTheme,
+} from "@/graphql/types-and-hooks";
 import "./components/cutom-block-voices";
 
 registerCoreBlocks();
@@ -22,6 +30,34 @@ const NewStoryForm = () => {
       redirect("/story");
     }
   });
+
+  const client = useApolloClient();
+
+  const createStory = async (data: any) => {
+    const { answers } = data;
+    const isCustomized = answers["story-customized"].value[0] === "Yes";
+
+    return client
+      .mutate({
+        mutation: CreateStoryDocument,
+        variables: {
+          voice: answers.voice.value as TVoices,
+          target: answers.language.value[0] as SupportedLanguages,
+          source: SupportedLanguages.En,
+          theme: isCustomized ? answers.theme.value[0] : StoryTheme.Random,
+          narrationStyle: isCustomized ? answers["narration-style"].value[0] : "",
+          specificWords: isCustomized ? answers["specific-words"].value : "",
+          gramarOptions: isCustomized ? answers["grammar-options"].value : "",
+        } satisfies CreateStoryMutationVariables,
+      })
+      .then((result: FetchResult<CreateStoryMutation>): string => {
+        return result.data!.createStory.storyId;
+      })
+      .then((storyId: string) => {
+        console.log(storyId);
+        redirect(`/story/${storyId}`);
+      });
+  };
 
   return (
     <div style={{ width: "100%", height: "100vh" }}>
@@ -61,11 +97,13 @@ const NewStoryForm = () => {
         }}
         applyLogic={false}
         isPreview={false}
-        onSubmit={(data, { completeForm, setIsSubmitting }) => {
+        onSubmit={async (data, { completeForm, setIsSubmitting }) => {
+          console.log(data);
+          await createStory(data);
+
           setTimeout(() => {
             setIsSubmitting(false);
             completeForm();
-            console.log(data);
             setFormCompleted(true);
           }, 500);
         }}
