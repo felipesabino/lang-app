@@ -19,4 +19,5 @@
   "useTabs": false,
   "vueIndentScriptAndStyle": false,
   "parser": "typescript"
+
 }

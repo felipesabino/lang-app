@@ -10,7 +10,7 @@ import { useMessages } from "@quillforms/renderer-core";
 import { useEffect, useState } from "react";
 
 let timer: NodeJS.Timeout;
-const MyCustomBlockDisplay = (props: any) => {
+export const MyCustomBlockDisplay = (props: any) => {
   const { id, attributes, setIsValid, setIsAnswered, setValidationErr, isActive, val, setVal, next } = props;
 
   const { required, items } = attributes;
@@ -117,4 +117,3 @@ const MyCustomBlockDisplay = (props: any) => {
     </>
   );
 };
-export default MyCustomBlockDisplay;
