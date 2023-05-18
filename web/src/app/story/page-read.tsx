@@ -1,12 +1,14 @@
 "use client";
 
-import { TextSelectionObserver, SelectionInfo } from "./components/TextSelectionObserver";
+import { TextSelectionObserver, SelectionInfo } from "./components/text-selection-observer";
 import { useState } from "react";
 import classNames from "classnames";
-import { Paragraph, ParagraphSplitter } from "./components/ParagraphSpitter";
+import { Paragraph, ParagraphSplitter } from "./components/paragraph-splitter";
 import { moreInfoMachine } from "./workflow/more-info-machine";
 import { useMachine } from "@xstate/react";
 import { Story, AudioSpeed, SpeechMark } from "@/graphql/types-and-hooks";
+import { capitalCase, sentenceCase } from "change-case";
+import { StoryTextBlockHeader } from "./components/page-read-header";
 
 export interface StoryTextBlockProps {
   story: Story;
@@ -92,14 +94,10 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElaps
   };
 
   return (
-    <div className="text-gray-700 font-mono relative mb-10 grid grid-cols-[2rem_1fr_2rem] xl:grid-cols-[minmax(2rem,1fr)_16rem_minmax(200px,calc(80rem-32rem))_16rem_minmax(2rem,1fr)] lg:grid-cols-[2rem_minmax(200px,calc(100%-16rem))_16rem_2rem] min-h-screen">
-      <div className="bg-white col-[2]  row[3] lg:col-[2] lg:row-[1] xl:col-[3] xl:row-[2]">
+    <div className="text-reading font-mono relative mb-10 flex flex-col md:flex-row min-h-screen place-content-center">
+      <div className="bg-white basis-full max-w-4xl">
         <div className="overflow-auto p-8 mb-8 divide-y divide-dashed ">
-          <div className="text-sm leading-4 mb-2">
-            Voice: Bianca
-            <br />
-            Theme: Random
-          </div>
+          <StoryTextBlockHeader story={story} />
           {toRender.text.map((item, index) => (
             <div key={"p-" + index}>
               <TextSelectionObserver onButtonClick={getSelectedTextInfo}>
@@ -116,7 +114,7 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElaps
         </div>
       </div>
       {["successful", "pending", "failure", "waiting"].some(state.matches) && (
-        <aside className="max-h-screen sticky top-12 col-[2] row-[4] xl:col-[4] xl:row-[2] lg:col[-2] lg:row-[2/2_span] pr-4 sm:pr-6 lg:border-l lg:border-gray-200 lg:pr-8 xl:pr-0">
+        <aside className="max-h-screen sticky top-12 md:pr-6 lg:border-l lg:border-gray-200 lg:pr-8 xl:pr-0 basis-1/5 md:basis-full">
           <div className="h-full py-6 pl-6">
             <a href="#" onClick={dismissSelectedTextInfo}>
               Dismiss this text
