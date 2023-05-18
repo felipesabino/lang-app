@@ -1,77 +1,140 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
-import { PlayIcon, ForwardIcon, BackwardIcon, PauseIcon } from '@heroicons/react/20/solid';
-import classNames from 'classnames';
+import React, { useState, forwardRef } from "react";
+import { PlayIcon, ForwardIcon, BackwardIcon, PauseIcon } from "@heroicons/react/24/solid";
+import classNames from "classnames";
+import { useMachine } from "@xstate/react";
+import { audioPlayerMachine } from "./audio-player-machine";
 
 interface AudioPlayerProps {
-  audioSrc: string;
+  audioCollection: Record<string, { audioUrl: string; description: string }>;
+  defaultAudioId: string;
   timeUpdated?: React.Dispatch<React.SetStateAction<number>>;
+  audioIdUpdated?: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export const AudioPlayer: React.FC<AudioPlayerProps> = forwardRef(({ audioSrc, timeUpdated }, ref) => {
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [audioDuration, setAudioDuration] = useState(0);
+export const AudioPlayer: React.FC<AudioPlayerProps> = forwardRef(
+  ({ audioCollection, defaultAudioId, timeUpdated, audioIdUpdated }, ref) => {
+    const [machine] = useState(() =>
+      audioPlayerMachine.withContext({
+        audioId: defaultAudioId,
+        audioUrl: audioCollection[defaultAudioId].audioUrl,
+        description: audioCollection[defaultAudioId].description,
+        timeElapsedInMs: 0,
+        audioDurationInMs: 0,
+        progressInPercent: 0,
+      })
+    );
 
-  useImperativeHandle(ref, () => ({
-    updateTime(timeInMilliSeconds: number) {
-      // @ts-ignore
-      audio.currentTime = Math.max((timeInMilliSeconds - 200)/ 1000, 0);
-    }
-  }));
+    const bindEventsToAudioObject = (audioObject: HTMLAudioElement): Promise<{ durationInMs: number }> => {
+      audioObject.ontimeupdate = () => {
+        const timeElapsedInMs = Math.floor(audioObject.currentTime * 1000);
+        send({ type: "TIME_ELAPSED", data: { timeElapsedInMs } });
+        timeUpdated && timeUpdated(timeElapsedInMs);
+      };
+      return new Promise((resolve) => {
+        audioObject.onloadedmetadata = () => {
+          resolve({ durationInMs: audioObject.duration * 1000 });
+        };
+      });
 
-  useEffect(() => {
-    const audioObj = new Audio(audioSrc);
-    setAudio(audioObj);
-
-    audioObj.ontimeupdate = () => {
-      setCurrentTime(audioObj.currentTime);
-      timeUpdated && timeUpdated(Math.floor(audioObj.currentTime * 1000));
+      // audioObject.oncanplaythrough = () => {
+      // });
     };
 
-    audioObj.onloadedmetadata = () => {
-      setAudioDuration(audioObj.duration);
-    };
+    const [state, send] = useMachine(machine, {
+      devTools: true,
+      services: {
+        load: async (context, _) => {
+          if (context.audioObject) {
+            context.audioObject.pause();
+            context.audioObject.currentTime = 0;
+            context.audioObject = undefined;
+          }
 
-    return () => {
-      audioObj.pause();
-      setAudio(null);
-    };
-  }, [audioSrc]);
+          const { audioUrl, description } = audioCollection[context.audioId];
 
-  const play = () => audio?.play();
-  const pause = () => audio?.pause();
-  const forward = () => {
-    if (audio) {
-      audio.currentTime = Math.min(audio.currentTime + 10, audioDuration);
-    }
-  };
-  const backward = () => {
-    if (audio) {
-      audio.currentTime = Math.max(audio.currentTime - 10, 0);
-    }
-  };
+          const audioObj = new Audio(audioUrl);
+          const metadata = await bindEventsToAudioObject(audioObj);
+          return {
+            audioObject: audioObj,
+            audioId: context.audioId,
+            audioUrl,
+            description,
+            audioDurationInMs: metadata.durationInMs,
+          };
+        },
+        play: async (context, _) => {
+          if (context.audioObject) {
+            context.audioObject.play();
+          }
+        },
+        pause: async (context, _) => {
+          if (context.audioObject) {
+            context.audioObject.pause();
+          }
+        },
+      },
+      actions: {
+        forward: (context, _) => {
+          if (context.audioObject) {
+            context.audioObject.currentTime = Math.min(
+              context.audioObject.currentTime + 10,
+              context.audioObject.duration
+            );
+          }
+        },
+        backward: (context, _) => {
+          if (context.audioObject) {
+            context.audioObject.currentTime = Math.max(context.audioObject.currentTime - 10, 0);
+          }
+        },
+      },
+    });
 
-  const progressPercentage = (currentTime / audioDuration) * 100;
+    return (
+      <div className="fixed bottom-0 h-16 grid place-items-center w-full bg-gray-800 border-t-2 border-gray-300">
+        <ul className="list-none w-max max-w-md flex items-center justify-stretch gap-8">
+          <li onClick={() => send("BACKWARD")}>
+            <BackwardIcon className="h-6 w-6 text-pink-300" />
+          </li>
+          <li onClick={() => send("PLAY")}>
+            <PlayIcon
+              className={classNames({
+                "h-6 w-6": true,
+                "text-pink-300": ["idle", "playable.paused"].some(state.matches),
+                "text-gray-300": !["idle", "playable.paused"].some(state.matches),
+              })}
+            />
+          </li>
+          <li onClick={() => send("PAUSE")}>
+            <PauseIcon
+              className={classNames({
+                "h-6 w-6": true,
+                "text-pink-300": state.matches("playable.playing"),
+                "text-gray-300": !state.matches("playable.playing"),
+              })}
+            />
+          </li>
+          <li onClick={() => send("FORWARD")}>
+            <ForwardIcon className="h-6 w-6 text-pink-300" />
+          </li>
 
-  return (
-    <div className="fixed bottom-0 h-12 w-full flex items-center justify-center bg-white border-t-2 border-gray-300">
-      <a href="#" onClick={backward}><BackwardIcon className='h-6 w-6 text-pink-300'/></a>
-      <a href="#" onClick={play}><PlayIcon className={classNames({
-        'h-6 w-6': true,
-        'text-pink-300': audio?.paused,
-        'text-gray-300': !audio?.paused
-      })}/></a>
-      <a href='#' onClick={pause}><PauseIcon className={classNames({
-        'h-6 w-6': true,
-        'text-pink-300': !audio?.paused,
-        'text-gray-300': audio?.paused
-      })}/></a>
-      <a href='#' onClick={forward}><ForwardIcon className='h-6 w-6 text-pink-300'/></a>
-      <div className='absolute bottom-0 w-full h-1.5 bg-black'>
-        <div className='h-full bg-pink-300' style={{ width: `${progressPercentage}%`}}></div>
+          <span className="text-gray-300">
+            {state.context.description}
+            {Object.keys(audioCollection)
+              .filter((id) => id !== state.context.audioId) // exclude the current audio (it will be shown as a link
+              .map((audioId) => (
+                <li key={audioId} onClick={() => send({ type: "CHANGE_SOURCE", data: { audioId } })}>
+                  (Change to {audioCollection[audioId].description})
+                </li>
+              ))}
+          </span>
+        </ul>
+        <div className="absolute bottom-0 w-full h-1.5 bg-black">
+          <div className="h-full bg-pink-300" style={{ width: `${state.context.progressInPercent}%` }}></div>
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);

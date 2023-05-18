@@ -1,5 +1,5 @@
 import { createMachine, assign } from "xstate";
-import { Story } from "../page-read";
+import { Story } from "@/graphql/types-and-hooks";
 
 export interface MachineContext {
   story: Story;

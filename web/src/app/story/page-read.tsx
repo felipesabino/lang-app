@@ -3,32 +3,18 @@
 import { TextSelectionObserver, SelectionInfo } from "./components/TextSelectionObserver";
 import { useState } from "react";
 import classNames from "classnames";
-import { TextContext } from "../api/story/text-context/[slug]/route";
 import { Paragraph, ParagraphSplitter } from "./components/ParagraphSpitter";
 import { moreInfoMachine } from "./workflow/more-info-machine";
 import { useMachine } from "@xstate/react";
-
-interface Mark {
-  type: "word" | "sentence";
-  time: number;
-  start: number;
-  end: number;
-  value: string;
-}
-
-export interface Story {
-  text: string;
-  translation: string;
-  marks: Mark[];
-  audio: string;
-}
+import { Story, AudioSpeed, SpeechMark } from "@/graphql/types-and-hooks";
 
 export interface StoryTextBlockProps {
   story: Story;
   timeElapsed: number;
+  audioSpeedSelected: AudioSpeed | string;
 }
 
-export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElapsed }) => {
+export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElapsed, audioSpeedSelected }) => {
   const [machine] = useState(() => moreInfoMachine.withContext({ story: story, selectedText: "" }));
 
   const [state, send] = useMachine(machine, {
@@ -49,15 +35,17 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElaps
     send("DISMISS");
   }
 
-  const marks = story.marks.filter((mark) => mark.type === "word");
+  const audioSelected = story.assets.audio.filter((audio) => audio.speed === audioSpeedSelected)[0];
+  const marks = audioSelected.speechMarks.filter((mark) => mark.type === "word").sort((a, b) => a.time - b.time);
 
   const toRender = {
-    text: ParagraphSplitter(story.text),
-    translation: ParagraphSplitter(story.translation),
-    mark: marks.findLast((mark) => mark.time < timeElapsed),
+    text: ParagraphSplitter(story.assets.text),
+    translation: ParagraphSplitter(story.assets.translation),
+    //@ts-expect-error
+    mark: marks.findLast((mark) => mark.time < timeElapsed) as SpeechMark | undefined,
   };
 
-  const renderDecoratedText = (paragraph: Paragraph, mark: Mark | undefined) => {
+  const renderDecoratedText = (paragraph: Paragraph, mark: SpeechMark | undefined) => {
     if (mark && paragraph.bufferEnd < mark.start) {
       return (
         <p
@@ -104,7 +92,7 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElaps
   };
 
   return (
-    <div className="text-gray-700 font-mono relative mb-12 grid grid-cols-[2rem_1fr_2rem] xl:grid-cols-[minmax(2rem,1fr)_16rem_minmax(200px,calc(80rem-32rem))_16rem_minmax(2rem,1fr)] lg:grid-cols-[2rem_minmax(200px,calc(100%-16rem))_16rem_2rem] min-h-screen">
+    <div className="text-gray-700 font-mono relative mb-10 grid grid-cols-[2rem_1fr_2rem] xl:grid-cols-[minmax(2rem,1fr)_16rem_minmax(200px,calc(80rem-32rem))_16rem_minmax(2rem,1fr)] lg:grid-cols-[2rem_minmax(200px,calc(100%-16rem))_16rem_2rem] min-h-screen">
       <div className="bg-white col-[2]  row[3] lg:col-[2] lg:row-[1] xl:col-[3] xl:row-[2]">
         <div className="overflow-auto p-8 mb-8 divide-y divide-dashed ">
           <div className="text-sm leading-4 mb-2">

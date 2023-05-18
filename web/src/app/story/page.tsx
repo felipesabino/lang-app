@@ -2,14 +2,16 @@
 
 import React, { useState } from "react";
 import { AudioPlayer } from "./components/audio-player/AudioPlayer";
-import { Story, StoryTextBlock } from "./page-read";
+import { StoryTextBlock } from "./page-read";
 import { GetStoryByIdDocument, GetStoryByIdQuery } from "@/graphql/types-and-hooks";
 import { useMachine } from "@xstate/react";
 import { pageMachine } from "./workflow/page-machine";
 import { useApolloClient, ApolloQueryResult } from "@apollo/client";
+import { Story, AudioSpeed } from "@/graphql/types-and-hooks";
 
 export default function StoryPage() {
-  const [timElapsed, setTimeElapsed] = useState(0);
+  const [timeElapsed, setTimeElapsed] = useState(0);
+  const [audioSpeed, setAudioSpeed] = useState(AudioSpeed.Normal.toString());
   const storyId = "adec05b1-a6b3-455e-935a-bd62a6ba2b6d";
 
   const client = useApolloClient();
@@ -28,27 +30,8 @@ export default function StoryPage() {
             },
             fetchPolicy: "cache-first",
           })
-          .then((result: ApolloQueryResult<GetStoryByIdQuery>): GetStoryByIdQuery => {
-            return result.data;
-          })
-          .then((data: GetStoryByIdQuery): Story => {
-            const audio = data.getStoryById?.assets.audio[0];
-
-            //HACK: temp hack while internal interfaces are not replaced by GQL ones
-            const story = {
-              audio: audio?.url + "",
-              text: data.getStoryById?.assets.text + "",
-              translation: data.getStoryById?.assets.translation + "",
-              marks:
-                audio?.speechMarks.map((mark) => ({
-                  type: mark.type as "word" | "sentence",
-                  time: mark.time,
-                  start: mark.start - 20,
-                  end: mark.end - 20,
-                  value: mark.value,
-                })) || [],
-            };
-            return story;
+          .then((result: ApolloQueryResult<GetStoryByIdQuery>): Story => {
+            return result.data.getStoryById!;
           });
       },
     },
@@ -70,11 +53,26 @@ export default function StoryPage() {
       )}
       {state.matches("successful") && (
         <>
-          <StoryTextBlock story={state.context.story!} timeElapsed={timElapsed} />
-          <AudioPlayer audioSrc={state.context.story!.audio} timeUpdated={setTimeElapsed} />
+          <StoryTextBlock story={state.context.story!} timeElapsed={timeElapsed} audioSpeedSelected={audioSpeed} />
+          <AudioPlayer
+            timeUpdated={setTimeElapsed}
+            defaultAudioId={AudioSpeed.Normal}
+            audioIdUpdated={setAudioSpeed}
+            audioCollection={getAudioCollectionFromStory(state.context.story!)}
+          />
         </>
       )}
       {state.matches("failure") && <>Error</>}
     </div>
   );
 }
+
+const getAudioCollectionFromStory = (story: Story) => {
+  return story.assets.audio.reduce((acc, audio) => {
+    acc[audio.speed.toString()] = {
+      audioUrl: audio.url,
+      description: audio.speed.toLowerCase(),
+    };
+    return acc;
+  }, {} as Record<string, { audioUrl: string; description: string }>);
+};
