@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { AudioPlayer } from "./components/audio-player/AudioPlayer";
+import { AudioPlayer } from "./components/audio-player";
 import { StoryTextBlock } from "./page-read";
 import { GetStoryByIdDocument, GetStoryByIdQuery } from "@/graphql/types-and-hooks";
 import { useMachine } from "@xstate/react";

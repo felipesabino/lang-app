@@ -135,7 +135,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = forwardRef(
           </span>
         </ul>
         <div className="absolute bottom-0 w-full h-1.5 bg-black">
-          <div className="h-full bg-pink-300" style={{ width: `${state.context.progressInPercent}%` }}></div>
+          <div className="h-full bg-emerald-500" style={{ width: `${state.context.progressInPercent}%` }}></div>
         </div>
       </div>
     );

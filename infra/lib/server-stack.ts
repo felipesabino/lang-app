@@ -71,7 +71,6 @@ export class ServerStack extends Stack {
           },
         },
       },
-      xrayEnabled: true,
     });
 
     // Prints out the AppSync GraphQL endpoint to the terminal

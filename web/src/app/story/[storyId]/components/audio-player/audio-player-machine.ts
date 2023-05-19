@@ -128,9 +128,10 @@ export const audioPlayerMachine = createMachine<MachineContext>(
         };
       }),
       "time-elapsed": assign((context, event) => {
+        debugger;
         return {
           timeElapsedInMs: event.data.timeElapsedInMs,
-          progressPercentage: (event.data.timeElapsedInMs / context.audioDurationInMs) * 100,
+          progressInPercent: (event.data.timeElapsedInMs / context.audioDurationInMs) * 100,
         };
       }),
     },

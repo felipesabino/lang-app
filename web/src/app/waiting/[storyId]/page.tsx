@@ -68,7 +68,7 @@ export default function Waiting(context: { params: { storyId: string } }) {
 
   return (
     <>
-      {["too-many-retrie/s", "timeout"].some(state.matches) && (
+      {["too-many-retries", "timeout"].some(state.matches) && (
         <div className="w-full mt-3 text-center">
           <span>
             There was an error fetching your story, please{" "}
