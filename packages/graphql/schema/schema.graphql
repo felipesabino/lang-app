@@ -117,9 +117,20 @@ type Story {
   assets: StoryAssets!
 }
 
+type SentenceExplanation {
+  sentence: String!
+  explanation: String!
+}
+
+input SentenceExplanationInput {
+  sentence: String!
+  language: LanguageInput!
+}
+
 type Query {
   getStoryById(storyId: ID!): Story
   getStoryStatus(storyId: ID!): StoryStatus
+  getSentenceExplanation(input: SentenceExplanationInput!): SentenceExplanation
 }
 
 input CreateStoryInput {

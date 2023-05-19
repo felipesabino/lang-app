@@ -84,8 +84,14 @@ export enum NarrationStyle {
 
 export type Query = {
   __typename?: 'Query';
+  getSentenceExplanation?: Maybe<SentenceExplanation>;
   getStoryById?: Maybe<Story>;
   getStoryStatus?: Maybe<StoryStatus>;
+};
+
+
+export type QueryGetSentenceExplanationArgs = {
+  input: SentenceExplanationInput;
 };
 
 
@@ -96,6 +102,17 @@ export type QueryGetStoryByIdArgs = {
 
 export type QueryGetStoryStatusArgs = {
   storyId: Scalars['ID'];
+};
+
+export type SentenceExplanation = {
+  __typename?: 'SentenceExplanation';
+  explanation: Scalars['String'];
+  sentence: Scalars['String'];
+};
+
+export type SentenceExplanationInput = {
+  language: LanguageInput;
+  sentence: Scalars['String'];
 };
 
 export type SpeechMark = {
@@ -193,6 +210,13 @@ export type GetStoryStatusQueryVariables = Exact<{
 
 
 export type GetStoryStatusQuery = { __typename?: 'Query', getStoryStatus?: { __typename?: 'StoryStatus', status: StoryStatusType } | null };
+
+export type GetSentenceExplanationQueryVariables = Exact<{
+  input: SentenceExplanationInput;
+}>;
+
+
+export type GetSentenceExplanationQuery = { __typename?: 'Query', getSentenceExplanation?: { __typename?: 'SentenceExplanation', explanation: string } | null };
 
 export type CreateStoryMutationVariables = Exact<{
   source: SupportedLanguages;
@@ -307,6 +331,41 @@ export function useGetStoryStatusLazyQuery(baseOptions?: Apollo.LazyQueryHookOpt
 export type GetStoryStatusQueryHookResult = ReturnType<typeof useGetStoryStatusQuery>;
 export type GetStoryStatusLazyQueryHookResult = ReturnType<typeof useGetStoryStatusLazyQuery>;
 export type GetStoryStatusQueryResult = Apollo.QueryResult<GetStoryStatusQuery, GetStoryStatusQueryVariables>;
+export const GetSentenceExplanationDocument = gql`
+    query getSentenceExplanation($input: SentenceExplanationInput!) {
+  getSentenceExplanation(input: $input) {
+    explanation
+  }
+}
+    `;
+
+/**
+ * __useGetSentenceExplanationQuery__
+ *
+ * To run a query within a React component, call `useGetSentenceExplanationQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetSentenceExplanationQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetSentenceExplanationQuery({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useGetSentenceExplanationQuery(baseOptions: Apollo.QueryHookOptions<GetSentenceExplanationQuery, GetSentenceExplanationQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetSentenceExplanationQuery, GetSentenceExplanationQueryVariables>(GetSentenceExplanationDocument, options);
+      }
+export function useGetSentenceExplanationLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetSentenceExplanationQuery, GetSentenceExplanationQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetSentenceExplanationQuery, GetSentenceExplanationQueryVariables>(GetSentenceExplanationDocument, options);
+        }
+export type GetSentenceExplanationQueryHookResult = ReturnType<typeof useGetSentenceExplanationQuery>;
+export type GetSentenceExplanationLazyQueryHookResult = ReturnType<typeof useGetSentenceExplanationLazyQuery>;
+export type GetSentenceExplanationQueryResult = Apollo.QueryResult<GetSentenceExplanationQuery, GetSentenceExplanationQueryVariables>;
 export const CreateStoryDocument = gql`
     mutation createStory($source: SupportedLanguages!, $target: SupportedLanguages!, $voice: String!, $narrationStyle: NarrationStyle = RANDOM, $theme: StoryTheme = RANDOM, $gramarOptions: [GrammarOptions!], $specificWords: [String!]) {
   createStory(
@@ -361,10 +420,16 @@ export type MutationKeySpecifier = ('createStory' | MutationKeySpecifier)[];
 export type MutationFieldPolicy = {
 	createStory?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type QueryKeySpecifier = ('getStoryById' | 'getStoryStatus' | QueryKeySpecifier)[];
+export type QueryKeySpecifier = ('getSentenceExplanation' | 'getStoryById' | 'getStoryStatus' | QueryKeySpecifier)[];
 export type QueryFieldPolicy = {
+	getSentenceExplanation?: FieldPolicy<any> | FieldReadFunction<any>,
 	getStoryById?: FieldPolicy<any> | FieldReadFunction<any>,
 	getStoryStatus?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type SentenceExplanationKeySpecifier = ('explanation' | 'sentence' | SentenceExplanationKeySpecifier)[];
+export type SentenceExplanationFieldPolicy = {
+	explanation?: FieldPolicy<any> | FieldReadFunction<any>,
+	sentence?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type SpeechMarkKeySpecifier = ('end' | 'start' | 'time' | 'type' | 'value' | SpeechMarkKeySpecifier)[];
 export type SpeechMarkFieldPolicy = {
@@ -435,6 +500,10 @@ export type StrictTypedTypePolicies = {
 	Query?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | QueryKeySpecifier | (() => undefined | QueryKeySpecifier),
 		fields?: QueryFieldPolicy,
+	},
+	SentenceExplanation?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | SentenceExplanationKeySpecifier | (() => undefined | SentenceExplanationKeySpecifier),
+		fields?: SentenceExplanationFieldPolicy,
 	},
 	SpeechMark?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | SpeechMarkKeySpecifier | (() => undefined | SpeechMarkKeySpecifier),

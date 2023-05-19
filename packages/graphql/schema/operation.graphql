@@ -39,6 +39,12 @@ query getStoryStatus($storyId: ID!) {
   }
 }
 
+query getSentenceExplanation($input: SentenceExplanationInput!) {
+  getSentenceExplanation(input: $input) {
+    explanation
+  }
+}
+
 
 mutation createStory(
   $source: SupportedLanguages!,

@@ -38,6 +38,10 @@ export const moreInfoMachine = createMachine<MachineContext>(
         //  in case there is a modal or side panel, for example. otherwise we just sent the state to 'waiting'
         on: {
           DISMISS: "idle",
+          SELECT: {
+            target: "pending",
+            actions: ["reset-retries", "select-text"],
+          },
         },
         // always: "waiting",
       },
