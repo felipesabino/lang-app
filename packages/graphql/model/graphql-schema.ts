@@ -29,7 +29,7 @@ export enum AudioSpeed {
 export type CreateStoryInput = {
   gramarOptions?: InputMaybe<Array<GrammarOptions>>;
   language: LanguageInput;
-  narrationStyle: NarrativeStyle;
+  narrationStyle: NarrationStyle;
   specificWords?: InputMaybe<Array<Scalars['String']>>;
   theme: StoryTheme;
   voice: Scalars['String'];
@@ -41,12 +41,12 @@ export type CreateStoryOutput = {
 };
 
 export enum GrammarOptions {
-  Futurecontinuous = 'FUTURECONTINUOUS',
-  Futuretense = 'FUTURETENSE',
-  Pastcontinuous = 'PASTCONTINUOUS',
-  Pasttense = 'PASTTENSE',
-  Presentcontinuous = 'PRESENTCONTINUOUS',
-  Presenttense = 'PRESENTTENSE'
+  FutureContinuous = 'FUTURE_CONTINUOUS',
+  FutureTense = 'FUTURE_TENSE',
+  PastContinuous = 'PAST_CONTINUOUS',
+  PastTense = 'PAST_TENSE',
+  PresentContinuous = 'PRESENT_CONTINUOUS',
+  PresentTense = 'PRESENT_TENSE'
 }
 
 export type LanguageInput = {
@@ -70,12 +70,12 @@ export type MutationCreateStoryArgs = {
   story: CreateStoryInput;
 };
 
-export enum NarrativeStyle {
-  Firstperson = 'FIRSTPERSON',
+export enum NarrationStyle {
+  FirstPerson = 'FIRST_PERSON',
   Letter = 'LETTER',
-  Newyorker = 'NEWYORKER',
+  NewYorker = 'NEW_YORKER',
   Random = 'RANDOM',
-  Thirdperson = 'THIRDPERSON'
+  ThirdPerson = 'THIRD_PERSON'
 }
 
 export type Query = {
@@ -131,7 +131,7 @@ export type StoryCreationMetadata = StoryOptions & {
   __typename?: 'StoryCreationMetadata';
   gramarOptions?: Maybe<Array<GrammarOptions>>;
   language: LanguageOutput;
-  narrationStyle: NarrativeStyle;
+  narrationStyle: NarrationStyle;
   specificWords?: Maybe<Array<Scalars['String']>>;
   theme: StoryTheme;
   voice: Scalars['String'];
@@ -140,7 +140,7 @@ export type StoryCreationMetadata = StoryOptions & {
 export type StoryOptions = {
   gramarOptions?: Maybe<Array<GrammarOptions>>;
   language: LanguageOutput;
-  narrationStyle: NarrativeStyle;
+  narrationStyle: NarrationStyle;
   specificWords?: Maybe<Array<Scalars['String']>>;
   theme: StoryTheme;
 };
@@ -165,8 +165,8 @@ export enum StoryTheme {
   Fantasy = 'FANTASY',
   Random = 'RANDOM',
   Romance = 'ROMANCE',
-  Scifi = 'SCIFI',
-  Youngadult = 'YOUNGADULT'
+  SciFi = 'SCI_FI',
+  YoungAdult = 'YOUNG_ADULT'
 }
 
 export enum SupportedLanguages {

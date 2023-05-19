@@ -25,9 +25,9 @@ enum StoryTheme {
   ADVENTURE
   ROMANCE
   FANTASY
-  SCIFI
+  SCI_FI
   DRAMA
-  YOUNGADULT
+  YOUNG_ADULT
   CHILDREN
 }
 
@@ -38,22 +38,22 @@ enum SupportedLanguages {
   fr
 }
 
-enum NarrativeStyle {
+enum NarrationStyle {
   RANDOM
-  FIRSTPERSON
-  THIRDPERSON
+  FIRST_PERSON
+  THIRD_PERSON
   LETTER
-  NEWYORKER
+  NEW_YORKER
 }
 
 
 enum GrammarOptions {
-  PASTTENSE
-  PRESENTTENSE
-  FUTURETENSE
-  PASTCONTINUOUS
-  PRESENTCONTINUOUS
-  FUTURECONTINUOUS
+  PAST_TENSE
+  PRESENT_TENSE
+  FUTURE_TENSE
+  PAST_CONTINUOUS
+  PRESENT_CONTINUOUS
+  FUTURE_CONTINUOUS
 }
 
 type LanguageOutput {
@@ -69,7 +69,7 @@ input LanguageInput {
 interface StoryOptions {
   theme: StoryTheme!
   language: LanguageOutput!
-  narrationStyle: NarrativeStyle!
+  narrationStyle: NarrationStyle!
   gramarOptions: [GrammarOptions!]
   specificWords: [String!]
 }
@@ -77,7 +77,7 @@ interface StoryOptions {
 type StoryCreationMetadata implements StoryOptions {
   theme: StoryTheme!
   language: LanguageOutput!
-  narrationStyle: NarrativeStyle!
+  narrationStyle: NarrationStyle!
   gramarOptions: [GrammarOptions!]
   specificWords: [String!]
   voice: String!
@@ -125,7 +125,7 @@ type Query {
 input CreateStoryInput {
   theme: StoryTheme!
   language: LanguageInput!
-  narrationStyle: NarrativeStyle!
+  narrationStyle: NarrationStyle!
   gramarOptions: [GrammarOptions!]
   specificWords: [String!]
   voice: String!

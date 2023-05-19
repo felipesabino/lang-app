@@ -44,7 +44,7 @@ mutation createStory(
   $source: SupportedLanguages!,
   $target: SupportedLanguages!,
   $voice: String!,
-  $narrationStyle: NarrativeStyle = RANDOM,
+  $narrationStyle: NarrationStyle = RANDOM,
   $theme: StoryTheme = RANDOM,
   $gramarOptions: [GrammarOptions!],
   $specificWords: [String!]) {

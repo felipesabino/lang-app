@@ -33,7 +33,7 @@ export enum AudioSpeed {
 export type CreateStoryInput = {
   gramarOptions?: InputMaybe<Array<GrammarOptions>>;
   language: LanguageInput;
-  narrationStyle: NarrativeStyle;
+  narrationStyle: NarrationStyle;
   specificWords?: InputMaybe<Array<Scalars['String']>>;
   theme: StoryTheme;
   voice: Scalars['String'];
@@ -45,12 +45,12 @@ export type CreateStoryOutput = {
 };
 
 export enum GrammarOptions {
-  Futurecontinuous = 'FUTURECONTINUOUS',
-  Futuretense = 'FUTURETENSE',
-  Pastcontinuous = 'PASTCONTINUOUS',
-  Pasttense = 'PASTTENSE',
-  Presentcontinuous = 'PRESENTCONTINUOUS',
-  Presenttense = 'PRESENTTENSE'
+  FutureContinuous = 'FUTURE_CONTINUOUS',
+  FutureTense = 'FUTURE_TENSE',
+  PastContinuous = 'PAST_CONTINUOUS',
+  PastTense = 'PAST_TENSE',
+  PresentContinuous = 'PRESENT_CONTINUOUS',
+  PresentTense = 'PRESENT_TENSE'
 }
 
 export type LanguageInput = {
@@ -74,12 +74,12 @@ export type MutationCreateStoryArgs = {
   story: CreateStoryInput;
 };
 
-export enum NarrativeStyle {
-  Firstperson = 'FIRSTPERSON',
+export enum NarrationStyle {
+  FirstPerson = 'FIRST_PERSON',
   Letter = 'LETTER',
-  Newyorker = 'NEWYORKER',
+  NewYorker = 'NEW_YORKER',
   Random = 'RANDOM',
-  Thirdperson = 'THIRDPERSON'
+  ThirdPerson = 'THIRD_PERSON'
 }
 
 export type Query = {
@@ -135,7 +135,7 @@ export type StoryCreationMetadata = StoryOptions & {
   __typename?: 'StoryCreationMetadata';
   gramarOptions?: Maybe<Array<GrammarOptions>>;
   language: LanguageOutput;
-  narrationStyle: NarrativeStyle;
+  narrationStyle: NarrationStyle;
   specificWords?: Maybe<Array<Scalars['String']>>;
   theme: StoryTheme;
   voice: Scalars['String'];
@@ -144,7 +144,7 @@ export type StoryCreationMetadata = StoryOptions & {
 export type StoryOptions = {
   gramarOptions?: Maybe<Array<GrammarOptions>>;
   language: LanguageOutput;
-  narrationStyle: NarrativeStyle;
+  narrationStyle: NarrationStyle;
   specificWords?: Maybe<Array<Scalars['String']>>;
   theme: StoryTheme;
 };
@@ -169,8 +169,8 @@ export enum StoryTheme {
   Fantasy = 'FANTASY',
   Random = 'RANDOM',
   Romance = 'ROMANCE',
-  Scifi = 'SCIFI',
-  Youngadult = 'YOUNGADULT'
+  SciFi = 'SCI_FI',
+  YoungAdult = 'YOUNG_ADULT'
 }
 
 export enum SupportedLanguages {
@@ -185,7 +185,7 @@ export type GetStoryByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetStoryByIdQuery = { __typename?: 'Query', getStoryById?: { __typename?: 'Story', generationRequestDate: number, lastUpdate: number, status: StoryStatusType, storyId: string, assets: { __typename?: 'StoryAssets', text: string, translation: string, audio: Array<{ __typename?: 'StoryAudioAsset', speed: AudioSpeed, url: string, speechMarks: Array<{ __typename?: 'SpeechMark', end: number, start: number, time: number, type: string, value: string }> }> }, creationMetadata: { __typename?: 'StoryCreationMetadata', gramarOptions?: Array<GrammarOptions> | null, narrationStyle: NarrativeStyle, specificWords?: Array<string> | null, theme: StoryTheme, voice: string, language: { __typename?: 'LanguageOutput', source: SupportedLanguages, target: SupportedLanguages } } } | null };
+export type GetStoryByIdQuery = { __typename?: 'Query', getStoryById?: { __typename?: 'Story', generationRequestDate: number, lastUpdate: number, status: StoryStatusType, storyId: string, assets: { __typename?: 'StoryAssets', text: string, translation: string, audio: Array<{ __typename?: 'StoryAudioAsset', speed: AudioSpeed, url: string, speechMarks: Array<{ __typename?: 'SpeechMark', end: number, start: number, time: number, type: string, value: string }> }> }, creationMetadata: { __typename?: 'StoryCreationMetadata', gramarOptions?: Array<GrammarOptions> | null, narrationStyle: NarrationStyle, specificWords?: Array<string> | null, theme: StoryTheme, voice: string, language: { __typename?: 'LanguageOutput', source: SupportedLanguages, target: SupportedLanguages } } } | null };
 
 export type GetStoryStatusQueryVariables = Exact<{
   storyId: Scalars['ID'];
@@ -198,7 +198,7 @@ export type CreateStoryMutationVariables = Exact<{
   source: SupportedLanguages;
   target: SupportedLanguages;
   voice: Scalars['String'];
-  narrationStyle?: InputMaybe<NarrativeStyle>;
+  narrationStyle?: InputMaybe<NarrationStyle>;
   theme?: InputMaybe<StoryTheme>;
   gramarOptions?: InputMaybe<Array<GrammarOptions> | GrammarOptions>;
   specificWords?: InputMaybe<Array<Scalars['String']> | Scalars['String']>;
@@ -308,7 +308,7 @@ export type GetStoryStatusQueryHookResult = ReturnType<typeof useGetStoryStatusQ
 export type GetStoryStatusLazyQueryHookResult = ReturnType<typeof useGetStoryStatusLazyQuery>;
 export type GetStoryStatusQueryResult = Apollo.QueryResult<GetStoryStatusQuery, GetStoryStatusQueryVariables>;
 export const CreateStoryDocument = gql`
-    mutation createStory($source: SupportedLanguages!, $target: SupportedLanguages!, $voice: String!, $narrationStyle: NarrativeStyle = RANDOM, $theme: StoryTheme = RANDOM, $gramarOptions: [GrammarOptions!], $specificWords: [String!]) {
+    mutation createStory($source: SupportedLanguages!, $target: SupportedLanguages!, $voice: String!, $narrationStyle: NarrationStyle = RANDOM, $theme: StoryTheme = RANDOM, $gramarOptions: [GrammarOptions!], $specificWords: [String!]) {
   createStory(
     story: {gramarOptions: $gramarOptions, language: {source: $source, target: $target}, narrationStyle: $narrationStyle, specificWords: $specificWords, theme: $theme, voice: $voice}
   ) {

@@ -1,6 +1,6 @@
 import { FormBlock, FormBlocks } from "@quillforms/types/build-types";
 import { VoiceEnglish, VoiceFrench, VoiceItalian, VoicePortuguese } from "@/graphql/voices";
-import { StoryTheme, GrammarOptions, SupportedLanguages, NarrativeStyle } from "@/graphql/types-and-hooks";
+import { StoryTheme, GrammarOptions, SupportedLanguages, NarrationStyle } from "@/graphql/types-and-hooks";
 export interface FormStepsProps {
   shouldStoryBeCustomized: boolean;
   currentTargetLanguage: string;
@@ -106,7 +106,7 @@ export const getFormSteps = (options: FormStepsProps): FormBlocks => {
                 },
                 {
                   label: "Sci-Fi",
-                  value: StoryTheme.Scifi,
+                  value: StoryTheme.SciFi,
                 },
                 {
                   label: "Drama",
@@ -114,7 +114,7 @@ export const getFormSteps = (options: FormStepsProps): FormBlocks => {
                 },
                 {
                   label: "Young Adult",
-                  value: StoryTheme.Youngadult,
+                  value: StoryTheme.YoungAdult,
                 },
                 {
                   label: "Children",
@@ -135,23 +135,23 @@ export const getFormSteps = (options: FormStepsProps): FormBlocks => {
               choices: [
                 {
                   label: "Random",
-                  value: NarrativeStyle.Random,
+                  value: NarrationStyle.Random,
                 },
                 {
                   label: "First Person Narrative",
-                  value: NarrativeStyle.Firstperson,
+                  value: NarrationStyle.FirstPerson,
                 },
                 {
                   label: "Third Person Narrative",
-                  value: NarrativeStyle.Thirdperson,
+                  value: NarrationStyle.ThirdPerson,
                 },
                 {
                   label: "A Letter",
-                  value: NarrativeStyle.Letter,
+                  value: NarrationStyle.Letter,
                 },
                 {
                   label: "New Yorker Style",
-                  value: NarrativeStyle.Newyorker,
+                  value: NarrationStyle.NewYorker,
                 },
               ],
             },
@@ -168,27 +168,27 @@ export const getFormSteps = (options: FormStepsProps): FormBlocks => {
               choices: [
                 {
                   label: "Past Tense",
-                  value: GrammarOptions.Pasttense,
+                  value: GrammarOptions.PastTense,
                 },
                 {
                   label: "Present Tense",
-                  value: GrammarOptions.Presenttense,
+                  value: GrammarOptions.PresentTense,
                 },
                 {
                   label: "Future Tense",
-                  value: GrammarOptions.Futuretense,
+                  value: GrammarOptions.FutureTense,
                 },
                 {
                   label: "Past Continuous",
-                  value: GrammarOptions.Pastcontinuous,
+                  value: GrammarOptions.PastContinuous,
                 },
                 {
                   label: "Present Continuous",
-                  value: GrammarOptions.Presentcontinuous,
+                  value: GrammarOptions.PresentContinuous,
                 },
                 {
                   label: "Future Continuous",
-                  value: GrammarOptions.Futurecontinuous,
+                  value: GrammarOptions.FutureContinuous,
                 },
               ],
             },

@@ -21,7 +21,7 @@ export function StoryTextBlockHeader(props: StoryTextBlockHeaderProps) {
       </div>
       <div>
         <span className="font-bold">Narration Style: </span>
-        {capitalCase("PAST_TENSE")}
+        {sentenceCase(story.creationMetadata.narrationStyle)}
       </div>
       <div>
         <span className="font-bold">Language: </span>
