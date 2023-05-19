@@ -80,8 +80,14 @@ export enum NarrationStyle {
 
 export type Query = {
   __typename?: 'Query';
+  getSentenceExplanation?: Maybe<SentenceExplanation>;
   getStoryById?: Maybe<Story>;
   getStoryStatus?: Maybe<StoryStatus>;
+};
+
+
+export type QueryGetSentenceExplanationArgs = {
+  input: SentenceExplanationInput;
 };
 
 
@@ -92,6 +98,17 @@ export type QueryGetStoryByIdArgs = {
 
 export type QueryGetStoryStatusArgs = {
   storyId: Scalars['ID'];
+};
+
+export type SentenceExplanation = {
+  __typename?: 'SentenceExplanation';
+  explanation: Scalars['String'];
+  sentence: Scalars['String'];
+};
+
+export type SentenceExplanationInput = {
+  language: LanguageInput;
+  sentence: Scalars['String'];
 };
 
 export type SpeechMark = {

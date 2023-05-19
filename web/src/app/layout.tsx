@@ -1,7 +1,7 @@
 "use client";
 
 import "./globals.css";
-import { UserHeader } from "./components/UserHeader";
+import { UserHeader } from "./components/user-header";
 import {
   ApolloProvider,
   ApolloClient,

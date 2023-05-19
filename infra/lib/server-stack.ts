@@ -131,6 +131,24 @@ export class ServerStack extends Stack {
     bucketStoryTranslation.grantRead(lambdaStoryGetById);
     bucketStoryAudio.grantRead(lambdaStoryGetById);
 
+    const lambdaSentenceExplanation = new LambdaNodeJs.NodejsFunction(this, "LambdaSentenceExplanation", {
+      runtime: Lambda.Runtime.NODEJS_18_X,
+      entry: `${PWD_API}/sentence-explanation.ts`,
+      handler: "handler",
+      depsLockFilePath: "yarn.lock",
+      timeout: Duration.seconds(30),
+      environment: {
+        OPENAI_API_KEY_SECRET_NAME: "openai-apikey",
+        OPENAI_API_KEY_SECRET_REGION: props?.env?.region + "",
+      },
+    });
+    lambdaSentenceExplanation.addToRolePolicy(
+      new IAM.PolicyStatement({
+        actions: ["secretsmanager:GetSecretValue"],
+        resources: ["*"],
+      })
+    );
+
     const lamdaStoryCreateDataSource = api.addLambdaDataSource("LambdaStoryCreateDataSource", lambdaStoryCreate);
     lamdaStoryCreateDataSource.createResolver("Mutation-CreateStory", {
       typeName: "Mutation",
@@ -144,6 +162,15 @@ export class ServerStack extends Stack {
       fieldName: "getStoryStatus",
     });
     dynamoDbTableStory.grantReadData(lambdaStoryStatus);
+
+    const lambdaSentenceExplanationDataSource = api.addLambdaDataSource(
+      "LambdaSentenceExplanationDataSource",
+      lambdaSentenceExplanation
+    );
+    lambdaSentenceExplanationDataSource.createResolver("Query-GetSentenceExplanation", {
+      typeName: "Query",
+      fieldName: "getSentenceExplanation",
+    });
 
     /*
       STEP FUNCTIONS

@@ -39,12 +39,12 @@ export const handler = async (event: { metadata: Story }): Promise<{ metadata: S
       Metadata: {
         "x-amz-meta-storyId": metadata.storyId,
         "x-amz-meta-generationRequestDate": metadata.generationRequestDate + "",
-        "x-amz-meta-gramarOptions": metadata.creationMetadata.gramarOptions.join("|"),
+        "x-amz-meta-gramarOptions": (metadata.creationMetadata.gramarOptions || []).join("|"),
         "x-amz-meta-language-source": metadata.creationMetadata.language.source,
         "x-amz-meta-language-target": metadata.creationMetadata.language.target,
         "x-amz-meta-theme": metadata.creationMetadata.theme,
         "x-amz-meta-narrationStyle": metadata.creationMetadata.narrationStyle,
-        "x-amz-meta-specificWords": metadata.creationMetadata.specificWords.join("|"),
+        "x-amz-meta-specificWords": (metadata.creationMetadata.specificWords || []).join("|"),
       },
     })
   );

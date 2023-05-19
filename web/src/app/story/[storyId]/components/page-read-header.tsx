@@ -1,5 +1,6 @@
 import { capitalCase, sentenceCase } from "change-case";
 import { AudioSpeed, Story } from "@/graphql/types-and-hooks";
+import moment from "moment";
 
 export interface StoryTextBlockHeaderProps {
   story: Story;
@@ -13,7 +14,7 @@ export function StoryTextBlockHeader(props: StoryTextBlockHeaderProps) {
     <div className="text-sm mb-4 grid grid-cols-2 max-sm:grid-cols-1">
       <div className="col-span-2 max-sm:col-span-1">
         <span className="font-bold">Story Generated on: </span>
-        {story.generationRequestDate}
+        {moment(story.generationRequestDate).format("DD MMM YYYY HH:mm")}
       </div>
       <div>
         <span className="font-bold">Theme: </span>

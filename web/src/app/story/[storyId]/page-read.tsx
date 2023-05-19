@@ -7,8 +7,9 @@ import { Paragraph, ParagraphSplitter } from "./components/paragraph-splitter";
 import { moreInfoMachine } from "./workflow/more-info-machine";
 import { useMachine } from "@xstate/react";
 import { Story, AudioSpeed, SpeechMark } from "@/graphql/types-and-hooks";
-import { capitalCase, sentenceCase } from "change-case";
 import { StoryTextBlockHeader } from "./components/page-read-header";
+import { useApolloClient, ApolloQueryResult } from "@apollo/client";
+import { GetSentenceExplanationDocument, GetSentenceExplanationQuery } from "@/graphql/types-and-hooks";
 
 export interface StoryTextBlockProps {
   story: Story;
@@ -17,13 +18,31 @@ export interface StoryTextBlockProps {
 }
 
 export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElapsed, audioSpeedSelected }) => {
+  const client = useApolloClient();
+
   const [machine] = useState(() => moreInfoMachine.withContext({ story: story, selectedText: "" }));
 
   const [state, send] = useMachine(machine, {
     devTools: true,
     services: {
       "get-text-info": (context, event) => {
-        return Promise.resolve("Text Info!");
+        return client
+          .query<GetSentenceExplanationQuery>({
+            query: GetSentenceExplanationDocument,
+            variables: {
+              input: {
+                sentence: context.selectedText,
+                language: {
+                  target: story.creationMetadata.language.target,
+                  source: story.creationMetadata.language.source,
+                },
+              },
+            },
+            fetchPolicy: "cache-first",
+          })
+          .then(async (result: ApolloQueryResult<GetSentenceExplanationQuery>): Promise<string> => {
+            return result.data.getSentenceExplanation!.explanation;
+          });
       },
     },
   });
