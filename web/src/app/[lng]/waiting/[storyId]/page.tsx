@@ -5,15 +5,17 @@ import { StoryStatusType, GetStoryStatusQuery, GetStoryStatusDocument } from "@/
 import { useEffect, useState } from "react";
 import { useApolloClient, ApolloQueryResult } from "@apollo/client";
 import { redirect } from "next/navigation";
+import { useTranslation } from "react-i18next";
 
 export default function Waiting(context: { params: { storyId: string } }) {
+  const { t, i18n } = useTranslation();
   const [go, setGo] = useState(false);
   useEffect(() => {
     if (go) {
       console.log("completed");
-      redirect(`/story/${context.params.storyId}`);
+      redirect(`/${i18n.language}/story/${context.params.storyId}`);
     }
-  });
+  }, [go]);
 
   const client = useApolloClient();
 
@@ -55,50 +57,47 @@ export default function Waiting(context: { params: { storyId: string } }) {
     },
   });
 
-  const sentences = [
-    "Give me just a few more seconds",
-    "Ai is thinking about your story",
-    "Hiring an virtual writer",
-    "Too expensive, rescinding contract",
-    "AI decided to write it by themselves",
-    "Finding a dictionary to translate text",
-    "Reading out loud to record audio",
-    "Give me just a few more seconds",
-  ];
+  const sentences = [...Array(8)].map((_, index) => {
+    return t(`story.waiting.loading${index}`);
+  });
 
   return (
     <>
       {["too-many-retries", "timeout"].some(state.matches) && (
         <div className="w-full mt-3 text-center">
           <span>
-            There was an error fetching your story, please{" "}
-            <a href="#" onClick={() => send("RETRY")}>
-              try again
-            </a>
+            <p>{t("story.waiting.error")}</p>
+            <p>
+              <a href="#" onClick={() => send("RETRY")}>
+                {t("story.waiting.retry")}
+              </a>
+            </p>
           </span>
         </div>
       )}
-      <div className="grid h-screen place-items-center">
-        <div
-          className="flex items-center text-3xl font-semibold"
-          style={{
-            maskImage:
-              "linear-gradient(0deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 20%, rgba(255,255,255,1) 80%, rgba(255,255,255,0) 100%)",
-            WebkitMaskImage:
-              "linear-gradient(0deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 20%, rgba(255,255,255,1) 80%, rgba(255,255,255,0) 100%)",
-          }}
-        >
-          <div className="h-12 m-auto overflow-hidden">
-            <ul className="p-0 mx-0 my-y2.5 animate-waiting-room">
-              {sentences.map((sentence, index) => (
-                <li className="flex items-center h-12 list-none text-gray-300" key={`sentence-${index}`}>
-                  {sentence}
-                </li>
-              ))}
-            </ul>
+      {!["too-many-retries", "timeout"].some(state.matches) && (
+        <div className="grid h-screen place-items-center">
+          <div
+            className="flex items-center text-3xl font-semibold"
+            style={{
+              maskImage:
+                "linear-gradient(0deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 20%, rgba(255,255,255,1) 80%, rgba(255,255,255,0) 100%)",
+              WebkitMaskImage:
+                "linear-gradient(0deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 20%, rgba(255,255,255,1) 80%, rgba(255,255,255,0) 100%)",
+            }}
+          >
+            <div className="h-12 m-auto overflow-hidden">
+              <ul className="p-0 mx-0 my-y2.5 animate-waiting-room">
+                {sentences.map((sentence, index) => (
+                  <li className="flex items-center h-12 list-none text-gray-300" key={`sentence-${index}`}>
+                    {sentence}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </>
   );
 }

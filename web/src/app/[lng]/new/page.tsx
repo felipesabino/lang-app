@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "react-i18next";
 
 //@ts-ignore
 import { registerCoreBlocks } from "@quillforms/react-renderer-utils";
@@ -21,13 +22,15 @@ import "./components/cutom-block-voices";
 registerCoreBlocks();
 
 const NewStoryForm = () => {
+  const { t, i18n } = useTranslation();
+
   const [newStoryId, setNewStoryId] = useState<string | null>(null);
   const shouldStoryBeCustomized = useFieldAnswer("story-customized");
   const currentTargetLanguage = useFieldAnswer("language");
 
   useEffect(() => {
     if (newStoryId) {
-      redirect(`/waiting/${newStoryId}`);
+      redirect(`${i18n.language}/waiting/${newStoryId}`);
     }
   });
 
@@ -92,7 +95,30 @@ const NewStoryForm = () => {
             progressBarBgColor: "#ccc",
           },
           messages: {
-            "block.defaultThankYouScreen.label": "Please wait while we generate your story!",
+            "label.button.ok": t("story.new.form.label.button.ok") + "",
+            "label.hintText.enter": t("story.new.form.label.hintText.enter") + "",
+            "label.hintText.multipleSelection": t("story.new.form.label.hintText.multipleSelection") + "",
+            "block.dropdown.placeholder": t("story.new.form.block.dropdown.placeholder") + "",
+            "block.dropdown.noSuggestions": t("story.new.form.block.dropdown.noSuggestions") + "",
+            "block.shortText.placeholder": t("story.new.form.block.shortText.placeholder") + "",
+            "block.longText.placeholder": t("story.new.form.block.longText.placeholder") + "",
+            "block.longText.hint": t("story.new.form.block.longText.hint") + "",
+            "block.number.placeholder": t("story.new.form.block.number.placeholder") + "",
+            "block.email.placeholder": t("story.new.form.block.email.placeholder") + "",
+            "block.defaultThankYouScreen.label": t("story.new.form.block.defaultThankYouScreen.label") + "",
+            "label.hintText.key": t("story.new.form.label.hintText.key") + "",
+            "label.progress.percent": t("story.new.form.label.progress.percent") + "",
+            "label.errorAlert.required": t("story.new.form.label.errorAlert.required") + "",
+            "label.errorAlert.date": t("story.new.form.label.errorAlert.date") + "",
+            "label.errorAlert.number": t("story.new.form.label.errorAlert.number") + "",
+            "label.errorAlert.selectionRequired": t("story.new.form.label.errorAlert.selectionRequired") + "",
+            "label.errorAlert.email": t("story.new.form.label.errorAlert.email") + "",
+            "label.errorAlert.url": t("story.new.form.label.errorAlert.url") + "",
+            "label.errorAlert.range": t("story.new.form.label.errorAlert.range") + "",
+            "label.errorAlert.minNum": t("story.new.form.label.errorAlert.minNum") + "",
+            "label.errorAlert.maxNum": t("story.new.form.label.errorAlert.maxNum") + "",
+            "label.errorAlert.maxCharacters": t("story.new.form.label.errorAlert.maxCharacters") + "",
+            "label.submitBtn": t("story.new.form.label.submitBtn") + "",
           },
         }}
         applyLogic={false}
@@ -105,7 +131,7 @@ const NewStoryForm = () => {
             completeForm();
           } catch (e) {
             console.log(e);
-            setSubmissionErr("Error creating your story, please try again.");
+            setSubmissionErr(t("story.new.error"));
           }
         }}
       />
