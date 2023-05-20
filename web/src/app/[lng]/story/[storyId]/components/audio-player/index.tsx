@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, forwardRef } from "react";
-import classNames from "classnames";
 import { useMachine } from "@xstate/react";
 import { audioPlayerMachine } from "./audio-player-machine";
+import { useTranslation } from "react-i18next";
 
 interface AudioPlayerProps {
   audioCollection: Record<string, { audioUrl: string; description: string }>;
@@ -14,6 +14,8 @@ interface AudioPlayerProps {
 
 export const AudioPlayer: React.FC<AudioPlayerProps> = forwardRef(
   ({ audioCollection, defaultAudioId, timeUpdated, audioIdUpdated }, ref) => {
+    const { t, i18n } = useTranslation();
+
     const [machine] = useState(() =>
       audioPlayerMachine.withContext({
         audioId: defaultAudioId,
@@ -123,13 +125,13 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = forwardRef(
           </li>
 
           <span className="text-gray-300">
-            Speed: {state.context.description}
+            {t("story.audioPlayer.speed")} {t(`common.audioSpeeds.${state.context.audioId}`)}
             <br />
             {Object.keys(audioCollection)
               .filter((id) => id !== state.context.audioId) // exclude the current audio (it will be shown as a link
               .map((audioId) => (
                 <a href="#" key={audioId} onClick={() => send({ type: "CHANGE_SOURCE", data: { audioId } })}>
-                  (Change to {audioCollection[audioId].description})
+                  ({t("story.audioPlayer.changeTo")} {t(`common.audioSpeeds.${audioId}`)})
                 </a>
               ))}
           </span>

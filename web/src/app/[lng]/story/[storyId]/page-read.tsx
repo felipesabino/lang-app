@@ -10,6 +10,7 @@ import { Story, AudioSpeed, SpeechMark } from "@/graphql/types-and-hooks";
 import { StoryTextBlockHeader } from "./components/page-read-header";
 import { useApolloClient, ApolloQueryResult } from "@apollo/client";
 import { GetSentenceExplanationDocument, GetSentenceExplanationQuery } from "@/graphql/types-and-hooks";
+import { useTranslation } from "react-i18next";
 
 export interface StoryTextBlockProps {
   story: Story;
@@ -18,6 +19,7 @@ export interface StoryTextBlockProps {
 }
 
 export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElapsed, audioSpeedSelected }) => {
+  const { t, i18n } = useTranslation();
   const client = useApolloClient();
 
   const [machine] = useState(() => moreInfoMachine.withContext({ story: story, selectedText: "" }));
@@ -48,6 +50,7 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElaps
   });
   async function getSelectedTextInfo(selectionInfo: SelectionInfo) {
     send("SELECT", { data: selectionInfo.selectedText });
+    window.getSelection()?.removeAllRanges();
   }
   async function retryGetSelectedTextInfo() {
     send("RETRY");
@@ -124,7 +127,7 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElaps
               </TextSelectionObserver>
               <details className="pb-2">
                 <summary className="text-sm leading-6 text-gray-400 font-semibold select-none hover:cursor-help">
-                  Translation
+                  {t("story.reading.translation")}
                 </summary>
                 <p className="mt-2 text-sm leading-6 text-gray-400 italic">{toRender.translation[index].text}</p>
               </details>
@@ -136,13 +139,15 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElaps
         <aside className="max-h-screen sticky top-12 md:pr-6 lg:border-l lg:border-gray-200 lg:pr-8 xl:pr-0 basis-1/5 md:basis-full">
           <div className="h-full py-6 pl-6">
             <a href="#" onClick={dismissSelectedTextInfo}>
-              Dismiss this text
+              {t("story.reading.moreInfo.dismiss")}
             </a>
             <hr className="mt-2 mb-4" />
             {["pending", "successful", "waiting"].some(state.matches) && (
-              <p className="text-gray-800">Selected text: &quot;{state.context.selectedText}&quot;</p>
+              <p className="text-gray-800">
+                {t("story.reading.moreInfo.selectedText")} &quot;{state.context.selectedText}&quot;
+              </p>
             )}
-            {state.matches("pending") && <p className="text-gray-800">Building explanation...</p>}
+            {state.matches("pending") && <p className="text-gray-800">{t("story.reading.moreInfo.loading")}</p>}
             {["successful", "waiting"].some(state.matches) &&
               state.context.textInfo.split("\n").map((paragraph: string, index: number) => (
                 <p className="pt-2" key={"exp-" + index}>
@@ -151,9 +156,9 @@ export const StoryTextBlock: React.FC<StoryTextBlockProps> = ({ story, timeElaps
               ))}
             {state.matches("failure") && (
               <p className="text-gray-800">
-                Error loading info{" "}
+                {t("story.reading.moreInfo.error")}
                 <a href="#" onClick={retryGetSelectedTextInfo}>
-                  Retry
+                  {t("story.reading.moreInfo.retry")}
                 </a>
               </p>
             )}

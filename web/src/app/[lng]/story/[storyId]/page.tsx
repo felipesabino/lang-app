@@ -8,21 +8,23 @@ import { useMachine } from "@xstate/react";
 import { pageMachine } from "./workflow/page-machine";
 import { useApolloClient, ApolloQueryResult } from "@apollo/client";
 import { Story, AudioSpeed } from "@/graphql/types-and-hooks";
+import { useTranslation } from "react-i18next";
 
 export default function StoryPage(context: { params: { storyId: string } }) {
+  const { t, i18n } = useTranslation();
+  const client = useApolloClient();
+
   const storyId = context.params.storyId;
 
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [audioSpeed, setAudioSpeed] = useState(AudioSpeed.Normal.toString());
-
-  const client = useApolloClient();
 
   const [machine] = useState(() => pageMachine.withContext({ storyId: storyId }));
 
   const [state, send] = useMachine(machine, {
     devTools: true,
     services: {
-      fetch: async (context, event) => {
+      fetch: async (context, _) => {
         return client
           .query({
             query: GetStoryByIdDocument,
@@ -47,7 +49,7 @@ export default function StoryPage(context: { params: { storyId: string } }) {
             role="status"
           >
             <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
-              Loading...
+              {t("reading.loading")}
             </span>
           </div>
         </div>
@@ -63,7 +65,7 @@ export default function StoryPage(context: { params: { storyId: string } }) {
           />
         </>
       )}
-      {state.matches("failure") && <>Error</>}
+      {state.matches("failure") && <>{t("reading.error")}</>}
     </div>
   );
 }

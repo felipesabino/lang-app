@@ -1,46 +1,50 @@
 import { FormBlock, FormBlocks } from "@quillforms/types/build-types";
 import { VoiceEnglish, VoiceFrench, VoiceItalian, VoicePortuguese } from "@/graphql/voices";
 import { StoryTheme, GrammarOptions, SupportedLanguages, NarrationStyle } from "@/graphql/types-and-hooks";
+import { useTranslation } from "react-i18next";
+
 export interface FormStepsProps {
   shouldStoryBeCustomized: boolean;
   currentTargetLanguage: string;
 }
 
 export const getFormSteps = (options: FormStepsProps): FormBlocks => {
+  const { t, i18n } = useTranslation();
   const blocks = [
     {
       name: "welcome-screen",
       id: "welcome",
       attributes: {
-        label: "Let's create a short story",
-        description: "We will ask a couple of settings to create a story more suited for your language learning needs",
+        label: t("story.new.welcome.label"),
+        description: t("story.new.welcome.description"),
         layout: "stack",
-        attachmentMaxWidth: "500px",
+        buttonText: t("story.new.welcome.action"),
       },
     },
     {
       name: "multiple-choice",
       id: "language",
       attributes: {
-        label: "What language do you want your story to be generated",
+        label: t("story.new.language.label"),
+        description: t("story.new.language.description"),
         required: true,
         multiple: false,
         layout: "stack",
         choices: [
           {
-            label: "English",
+            label: t(`common.languages.${SupportedLanguages.En}`),
             value: SupportedLanguages.En,
           },
           {
-            label: "Portuguese",
+            label: t(`common.languages.${SupportedLanguages.Pt}`),
             value: SupportedLanguages.Pt,
           },
           {
-            label: "Italian",
+            label: t(`common.languages.${SupportedLanguages.It}`),
             value: SupportedLanguages.It,
           },
           {
-            label: "French",
+            label: t(`common.languages.${SupportedLanguages.Fr}`),
             value: SupportedLanguages.Fr,
           },
         ],
@@ -50,8 +54,8 @@ export const getFormSteps = (options: FormStepsProps): FormBlocks => {
       name: "custom-block-voices",
       id: "voice",
       attributes: {
-        label: "Select the voice you would like your audio to read on",
-        description: "For a glimpse, click play button to preview",
+        label: t("story.new.voice.label"),
+        description: t("story.new.voice.description"),
         required: true,
         items: getVoicesFormMetadata(options.currentTargetLanguage),
       },
@@ -60,16 +64,16 @@ export const getFormSteps = (options: FormStepsProps): FormBlocks => {
       id: "story-customized",
       name: "multiple-choice",
       attributes: {
-        label: "Do you want to add some customization to your story?",
-        description: "Like selecting a theme, a narrative style, use specific grammar rules or include specific words?",
+        label: t("story.new.customization.label"),
+        description: t("story.new.customization.description"),
         choices: [
           {
+            label: t("common.yes"),
             value: "Yes",
-            label: "Yes",
           },
           {
+            label: t("common.no"),
             value: "No",
-            label: "No",
           },
         ],
         verticalAlign: false,
@@ -82,42 +86,42 @@ export const getFormSteps = (options: FormStepsProps): FormBlocks => {
             name: "multiple-choice",
             id: "theme",
             attributes: {
-              label: "All right! What theme would you like to use for your story in {{field:language}}?",
+              label: t("story.new.theme.label"),
               defaultValue: "Random",
               required: true,
               multiple: false,
               layout: "stack",
               choices: [
                 {
-                  label: "Random",
+                  label: t(`common.themes.${StoryTheme.Random}`),
                   value: StoryTheme.Random,
                 },
                 {
-                  label: "Adventure",
+                  label: t(`common.themes.${StoryTheme.Adventure}`),
                   value: StoryTheme.Adventure,
                 },
                 {
-                  label: "Romance",
+                  label: t(`common.themes.${StoryTheme.Romance}`),
                   value: StoryTheme.Romance,
                 },
                 {
-                  label: "Fantasy",
+                  label: t(`common.themes.${StoryTheme.Fantasy}`),
                   value: StoryTheme.Fantasy,
                 },
                 {
-                  label: "Sci-Fi",
+                  label: t(`common.themes.${StoryTheme.SciFi}`),
                   value: StoryTheme.SciFi,
                 },
                 {
-                  label: "Drama",
+                  label: t(`common.themes.${StoryTheme.Drama}`),
                   value: StoryTheme.Drama,
                 },
                 {
-                  label: "Young Adult",
+                  label: t(`common.themes.${StoryTheme.YoungAdult}`),
                   value: StoryTheme.YoungAdult,
                 },
                 {
-                  label: "Children",
+                  label: t(`common.themes.${StoryTheme.Children}`),
                   value: StoryTheme.Children,
                 },
               ],
@@ -127,30 +131,30 @@ export const getFormSteps = (options: FormStepsProps): FormBlocks => {
             name: "multiple-choice",
             id: "narration-style",
             attributes: {
-              label: "What about a narrative style, would you like to use a specific one?",
-              defaultValue: "RANDOM",
+              label: t("story.new.narrationStyle.label"),
+              defaultValue: NarrationStyle.Random,
               required: true,
               multiple: false,
               layout: "stack",
               choices: [
                 {
-                  label: "Random",
+                  label: t(`common.narrationStyles.${NarrationStyle.Random}`),
                   value: NarrationStyle.Random,
                 },
                 {
-                  label: "First Person Narrative",
+                  label: t(`common.narrationStyles.${NarrationStyle.FirstPerson}`),
                   value: NarrationStyle.FirstPerson,
                 },
                 {
-                  label: "Third Person Narrative",
+                  label: t(`common.narrationStyles.${NarrationStyle.ThirdPerson}`),
                   value: NarrationStyle.ThirdPerson,
                 },
                 {
-                  label: "A Letter",
+                  label: t(`common.narrationStyles.${NarrationStyle.Letter}`),
                   value: NarrationStyle.Letter,
                 },
                 {
-                  label: "New Yorker Style",
+                  label: t(`common.narrationStyles.${NarrationStyle.NewYorker}`),
                   value: NarrationStyle.NewYorker,
                 },
               ],
@@ -163,31 +167,31 @@ export const getFormSteps = (options: FormStepsProps): FormBlocks => {
               required: false,
               multiple: true,
               verticalAlign: false,
-              label: "Are there specific Grammar Options you want to be used in the Story?",
+              label: t("story.new.grammarOptions.label"),
               layout: "stack",
               choices: [
                 {
-                  label: "Past Tense",
+                  label: t(`common.grammarOptions.${GrammarOptions.PastTense}`),
                   value: GrammarOptions.PastTense,
                 },
                 {
-                  label: "Present Tense",
+                  label: t(`common.grammarOptions.${GrammarOptions.PresentTense}`),
                   value: GrammarOptions.PresentTense,
                 },
                 {
-                  label: "Future Tense",
+                  label: t(`common.grammarOptions.${GrammarOptions.FutureTense}`),
                   value: GrammarOptions.FutureTense,
                 },
                 {
-                  label: "Past Continuous",
+                  label: t(`common.grammarOptions.${GrammarOptions.PastContinuous}`),
                   value: GrammarOptions.PastContinuous,
                 },
                 {
-                  label: "Present Continuous",
+                  label: t(`common.grammarOptions.${GrammarOptions.PresentContinuous}`),
                   value: GrammarOptions.PresentContinuous,
                 },
                 {
-                  label: "Future Continuous",
+                  label: t(`common.grammarOptions.${GrammarOptions.FutureContinuous}`),
                   value: GrammarOptions.FutureContinuous,
                 },
               ],
@@ -199,9 +203,8 @@ export const getFormSteps = (options: FormStepsProps): FormBlocks => {
             attributes: {
               required: false,
               layout: "stack",
-              label: "Are there any words or a short sentence you would like to have included in your story?",
-              description:
-                "This is useful if there is a word or sentence you have been struggling with while learning {{field:language}}",
+              label: t("story.new.specificWords.label"),
+              description: t("story.new.specificWords.description"),
             },
           } as FormBlock,
         ]
@@ -210,7 +213,7 @@ export const getFormSteps = (options: FormStepsProps): FormBlocks => {
             id: "end",
             name: "statement",
             attributes: {
-              label: "We are all set, let's create your story in {{field:language}}",
+              label: t("story.new.end.label"),
               quotationMarks: false,
             },
           } as FormBlock,
