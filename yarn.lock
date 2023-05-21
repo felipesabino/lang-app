@@ -5294,6 +5294,11 @@ cross-spawn@^7.0.2, cross-spawn@^7.0.3:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
+crypto-secure-random-digit@^1.0.10:
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/crypto-secure-random-digit/-/crypto-secure-random-digit-1.0.10.tgz#68cba3079e3bd0ea2d0df8eecef6f63101c9e7e2"
+  integrity sha512-s8lDlKys87l8++pXrY8SxX3Uu31lQrpQDlPRGmR4r3y3iRqQiXj9ejAF1TsCU4w38mIXR72D571ujqzT+rcpCA==
+
 css-box-model@^1.2.0:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/css-box-model/-/css-box-model-1.2.1.tgz#59951d3b81fd6b2074a62d49444415b0d2b4d7c1"

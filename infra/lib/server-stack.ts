@@ -4,6 +4,7 @@ import { Construct } from "constructs";
 import * as AppSync from "aws-cdk-lib/aws-appsync";
 import * as LambdaNodeJs from "aws-cdk-lib/aws-lambda-nodejs";
 import * as Lambda from "aws-cdk-lib/aws-lambda";
+import * as Cognito from "aws-cdk-lib/aws-cognito";
 import * as DynamoDB from "aws-cdk-lib/aws-dynamodb";
 import * as S3 from "aws-cdk-lib/aws-s3";
 import * as StepFunction from "aws-cdk-lib/aws-stepfunctions";
@@ -22,6 +23,7 @@ export class ServerStack extends Stack {
     const PWD_API = `${PWD_SERVER}/api`;
     const PWD_WORKFLOW = `${PWD_SERVER}/workflows`;
     const PWD_GRAPHQL = `${PWD_ROOT}/packages/graphql`;
+    const PWD_AUTH = `${PWD_SERVER}/authentication`;
 
     /*
       Resources (Tables, Buckets, etc)
@@ -55,121 +57,6 @@ export class ServerStack extends Stack {
       publicReadAccess: true,
       blockPublicAccess: S3.BlockPublicAccess.BLOCK_ACLS,
       enforceSSL: true,
-    });
-
-    /*
-      API
-    */
-    const api = new AppSync.GraphqlApi(this, "Api", {
-      name: "appsync-api",
-      schema: AppSync.SchemaFile.fromAsset(`${PWD_GRAPHQL}/schema/schema.graphql`),
-      authorizationConfig: {
-        defaultAuthorization: {
-          authorizationType: AppSync.AuthorizationType.API_KEY,
-          apiKeyConfig: {
-            expires: Expiration.after(Duration.days(365)),
-          },
-        },
-      },
-    });
-
-    // Prints out the AppSync GraphQL endpoint to the terminal
-    new CfnOutput(this, "GraphQLAPIURL", {
-      value: api.graphqlUrl,
-    });
-
-    // Prints out the AppSync GraphQL API key to the terminal
-    new CfnOutput(this, "GraphQLAPIKey", {
-      value: api.apiKey || "",
-    });
-
-    // Prints out the stack region to the terminal
-    new CfnOutput(this, "Stack Region", {
-      value: this.region,
-    });
-
-    const lambdaStoryCreate = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryCreate", {
-      runtime: Lambda.Runtime.NODEJS_18_X,
-      entry: `${PWD_API}/story-create.ts`,
-      handler: "handler",
-      depsLockFilePath: "yarn.lock",
-      environment: {
-        STORY_TABLE: dynamoDbTableStory.tableName,
-      },
-    });
-
-    const lambdaStoryStatus = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryStatus", {
-      runtime: Lambda.Runtime.NODEJS_18_X,
-      entry: `${PWD_API}/story-status.ts`,
-      handler: "handler",
-      depsLockFilePath: "yarn.lock",
-      environment: {
-        STORY_TABLE: dynamoDbTableStory.tableName,
-      },
-    });
-
-    const lambdaStoryGetById = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryGetById", {
-      runtime: Lambda.Runtime.NODEJS_18_X,
-      entry: `${PWD_API}/story-get-by-id.ts`,
-      handler: "handler",
-      depsLockFilePath: "yarn.lock",
-      environment: {
-        STORY_TABLE: dynamoDbTableStory.tableName,
-        TEXT_BUCKET_NAME: bucketStoryText.bucketName,
-        TRANSLATION_BUCKET_NAME: bucketStoryTranslation.bucketName,
-        AUDIO_BUCKET_NAME: bucketStoryAudio.bucketName,
-        AUDIO_BUCKET_URL: bucketStoryAudio.urlForObject(""),
-      },
-    });
-    const lamdaStoryGetByIdDataSource = api.addLambdaDataSource("LambdaStoryGetByIdDataSource", lambdaStoryGetById);
-    lamdaStoryGetByIdDataSource.createResolver("Query-getStoryById", {
-      typeName: "Query",
-      fieldName: "getStoryById",
-    });
-    dynamoDbTableStory.grantReadData(lambdaStoryGetById);
-    bucketStoryText.grantRead(lambdaStoryGetById);
-    bucketStoryTranslation.grantRead(lambdaStoryGetById);
-    bucketStoryAudio.grantRead(lambdaStoryGetById);
-
-    const lambdaSentenceExplanation = new LambdaNodeJs.NodejsFunction(this, "LambdaSentenceExplanation", {
-      runtime: Lambda.Runtime.NODEJS_18_X,
-      entry: `${PWD_API}/sentence-explanation.ts`,
-      handler: "handler",
-      depsLockFilePath: "yarn.lock",
-      timeout: Duration.seconds(30),
-      environment: {
-        OPENAI_API_KEY_SECRET_NAME: "openai-apikey",
-        OPENAI_API_KEY_SECRET_REGION: props?.env?.region + "",
-      },
-    });
-    lambdaSentenceExplanation.addToRolePolicy(
-      new IAM.PolicyStatement({
-        actions: ["secretsmanager:GetSecretValue"],
-        resources: ["*"],
-      })
-    );
-
-    const lamdaStoryCreateDataSource = api.addLambdaDataSource("LambdaStoryCreateDataSource", lambdaStoryCreate);
-    lamdaStoryCreateDataSource.createResolver("Mutation-CreateStory", {
-      typeName: "Mutation",
-      fieldName: "createStory",
-    });
-    dynamoDbTableStory.grantFullAccess(lambdaStoryCreate);
-
-    const lamdaStoryStatusDataSource = api.addLambdaDataSource("LambdaStoryStatusDataSource", lambdaStoryStatus);
-    lamdaStoryStatusDataSource.createResolver("Query-GetStoryStatus", {
-      typeName: "Query",
-      fieldName: "getStoryStatus",
-    });
-    dynamoDbTableStory.grantReadData(lambdaStoryStatus);
-
-    const lambdaSentenceExplanationDataSource = api.addLambdaDataSource(
-      "LambdaSentenceExplanationDataSource",
-      lambdaSentenceExplanation
-    );
-    lambdaSentenceExplanationDataSource.createResolver("Query-GetSentenceExplanation", {
-      typeName: "Query",
-      fieldName: "getSentenceExplanation",
     });
 
     /*
@@ -302,7 +189,277 @@ export class ServerStack extends Stack {
       definition: chain,
     });
 
+    /*
+      AUTH cognito pool
+        https://github.com/aws-samples/amazon-cognito-passwordless-email-auth/blob/master/cognito/template.yaml
+    */
+
+    const lambdaAuthDefineAuthChallenge = new LambdaNodeJs.NodejsFunction(this, "LambdaAuthDefineAuthChallenge", {
+      runtime: Lambda.Runtime.NODEJS_18_X,
+      entry: `${PWD_AUTH}/define-auth-challenge.ts`,
+      handler: "handler",
+      depsLockFilePath: "yarn.lock",
+    });
+
+    const lambdaAuthCreateAuthChallenge = new LambdaNodeJs.NodejsFunction(this, "LambdaAuthCreateAuthChallenge", {
+      runtime: Lambda.Runtime.NODEJS_18_X,
+      entry: `${PWD_AUTH}/create-auth-challenge.ts`,
+      handler: "handler",
+      depsLockFilePath: "yarn.lock",
+      environment: {
+        SES_FROM_ADDRESS: "langapp@sabino.me",
+      },
+    });
+    lambdaAuthCreateAuthChallenge.addToRolePolicy(
+      new IAM.PolicyStatement({
+        actions: ["ses:SendEmail", "iam:PassRole"],
+        resources: ["*"],
+      })
+    );
+
+    const lambdaAuthVerifyAuthChallengeResponse = new LambdaNodeJs.NodejsFunction(
+      this,
+      "LambdaAuthVerifyAuthChallengeResponse",
+      {
+        runtime: Lambda.Runtime.NODEJS_18_X,
+        entry: `${PWD_AUTH}/verify-auth-challenge-response.ts`,
+        handler: "handler",
+        depsLockFilePath: "yarn.lock",
+      }
+    );
+
+    const lambdaAutPreSignUp = new LambdaNodeJs.NodejsFunction(this, "LambdaAutPreSignUp", {
+      runtime: Lambda.Runtime.NODEJS_18_X,
+      entry: `${PWD_AUTH}/pre-signup.ts`,
+      handler: "handler",
+      depsLockFilePath: "yarn.lock",
+    });
+
+    const roleAuthLambdaAutPostAuthentication = new IAM.Role(this, "Role", {
+      assumedBy: new IAM.ServicePrincipal("lambda.amazonaws.com"),
+      managedPolicies: [
+        IAM.ManagedPolicy.fromManagedPolicyArn(
+          this,
+          "AWSLambdaBasicEXecutionRole",
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        ),
+      ],
+      roleName: "PostAuthenticationRole",
+    });
+
+    const lambdaAutPostAuthentication = new LambdaNodeJs.NodejsFunction(this, "LambdaAutPostAuthentication", {
+      runtime: Lambda.Runtime.NODEJS_18_X,
+      entry: `${PWD_AUTH}/post-authentication.ts`,
+      handler: "handler",
+      depsLockFilePath: "yarn.lock",
+      role: roleAuthLambdaAutPostAuthentication,
+    });
+
+    const authUserPool = new Cognito.UserPool(this, "AuthUserPool", {
+      userPoolName: "AuthUserPool",
+      passwordPolicy: {
+        minLength: 8,
+        requireLowercase: false,
+        requireUppercase: false,
+        requireDigits: false,
+        requireSymbols: false,
+      },
+      mfa: Cognito.Mfa.OFF,
+      lambdaTriggers: {
+        createAuthChallenge: lambdaAuthCreateAuthChallenge,
+        defineAuthChallenge: lambdaAuthDefineAuthChallenge,
+        preSignUp: lambdaAutPreSignUp,
+        verifyAuthChallengeResponse: lambdaAuthVerifyAuthChallengeResponse,
+        postAuthentication: lambdaAutPostAuthentication,
+      },
+      customAttributes: {
+        name: new Cognito.StringAttribute({ mutable: true, minLen: 1, maxLen: 128 }),
+        email: new Cognito.StringAttribute({ mutable: true, minLen: 1, maxLen: 128 }),
+      },
+    });
+
+    const policyAuthSetUserAttributesPolicy = new IAM.Policy(this, "allow-set-user-attributes", {
+      document: new IAM.PolicyDocument({
+        statements: [
+          new IAM.PolicyStatement({
+            actions: ["cognito-idp:AdminUpdateUserAttributes"],
+            resources: [authUserPool.userPoolArn],
+          }),
+        ],
+      }),
+      roles: [roleAuthLambdaAutPostAuthentication],
+    });
+
+    lambdaAuthCreateAuthChallenge.addPermission("PersmissionLambdaAuthCreateAuthChallengeUserPool", {
+      principal: new IAM.ServicePrincipal("cognito-idp.amazonaws.com"),
+      action: "lambda:InvokeFunction",
+      sourceArn: authUserPool.userPoolArn,
+    });
+    lambdaAuthDefineAuthChallenge.addPermission("PersmissionLambdaAuthDefineAuthChallengeUserPool", {
+      principal: new IAM.ServicePrincipal("cognito-idp.amazonaws.com"),
+      action: "lambda:InvokeFunction",
+      sourceArn: authUserPool.userPoolArn,
+    });
+    lambdaAutPreSignUp.addPermission("PersmissionLambdaAuthreSignUpUserPool", {
+      principal: new IAM.ServicePrincipal("cognito-idp.amazonaws.com"),
+      action: "lambda:InvokeFunction",
+      sourceArn: authUserPool.userPoolArn,
+    });
+    lambdaAuthVerifyAuthChallengeResponse.addPermission("PersmissionLambdaAuthVerifyAuthChallengeResponseUserPool", {
+      principal: new IAM.ServicePrincipal("cognito-idp.amazonaws.com"),
+      action: "lambda:InvokeFunction",
+      sourceArn: authUserPool.userPoolArn,
+    });
+    lambdaAutPostAuthentication.addPermission("PersmissionLambdaAuthostAuthenticationUserPool", {
+      principal: new IAM.ServicePrincipal("cognito-idp.amazonaws.com"),
+      action: "lambda:InvokeFunction",
+      sourceArn: authUserPool.userPoolArn,
+    });
+
+    const authUserPoolClient = new Cognito.UserPoolClient(this, "AuthUserPoolClient", {
+      userPoolClientName: "AuthUserPoolClient",
+      userPool: authUserPool,
+      generateSecret: false,
+      authFlows: {
+        custom: true,
+        userSrp: true,
+      },
+    });
+
+    // Prints out the user pool id
+    new CfnOutput(this, "UserPoolId", {
+      value: authUserPool.userPoolId,
+    });
+
+    // Prints out the user pool client id
+    new CfnOutput(this, "UserPoolClientId", {
+      value: authUserPoolClient.userPoolClientId,
+    });
+
+    /*
+      API
+    */
+    const api = new AppSync.GraphqlApi(this, "Api", {
+      name: "appsync-api",
+      schema: AppSync.SchemaFile.fromAsset(`${PWD_GRAPHQL}/schema/schema.graphql`),
+      authorizationConfig: {
+        defaultAuthorization: {
+          authorizationType: AppSync.AuthorizationType.API_KEY,
+          apiKeyConfig: {
+            expires: Expiration.after(Duration.days(365)),
+          },
+        },
+        additionalAuthorizationModes: [
+          {
+            authorizationType: AppSync.AuthorizationType.USER_POOL,
+            userPoolConfig: {
+              userPool: authUserPool,
+              defaultAction: AppSync.UserPoolDefaultAction.ALLOW,
+            },
+          },
+        ],
+      },
+    });
+
+    // Prints out the AppSync GraphQL endpoint to the terminal
+    new CfnOutput(this, "GraphQLAPIURL", {
+      value: api.graphqlUrl,
+    });
+
+    // Prints out the AppSync GraphQL API key to the terminal
+    new CfnOutput(this, "GraphQLAPIKey", {
+      value: api.apiKey || "",
+    });
+
+    // Prints out the stack region to the terminal
+    new CfnOutput(this, "Stack Region", {
+      value: this.region,
+    });
+
+    const lambdaStoryCreate = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryCreate", {
+      runtime: Lambda.Runtime.NODEJS_18_X,
+      entry: `${PWD_API}/story-create.ts`,
+      handler: "handler",
+      depsLockFilePath: "yarn.lock",
+      environment: {
+        STORY_TABLE: dynamoDbTableStory.tableName,
+      },
+    });
     stateMachine.grantStartExecution(lambdaStoryCreate);
     lambdaStoryCreate.addEnvironment("STATE_MACHINE_ARN", stateMachine.stateMachineArn);
+
+    const lambdaStoryStatus = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryStatus", {
+      runtime: Lambda.Runtime.NODEJS_18_X,
+      entry: `${PWD_API}/story-status.ts`,
+      handler: "handler",
+      depsLockFilePath: "yarn.lock",
+      environment: {
+        STORY_TABLE: dynamoDbTableStory.tableName,
+      },
+    });
+
+    const lambdaStoryGetById = new LambdaNodeJs.NodejsFunction(this, "LambdaStoryGetById", {
+      runtime: Lambda.Runtime.NODEJS_18_X,
+      entry: `${PWD_API}/story-get-by-id.ts`,
+      handler: "handler",
+      depsLockFilePath: "yarn.lock",
+      environment: {
+        STORY_TABLE: dynamoDbTableStory.tableName,
+        TEXT_BUCKET_NAME: bucketStoryText.bucketName,
+        TRANSLATION_BUCKET_NAME: bucketStoryTranslation.bucketName,
+        AUDIO_BUCKET_NAME: bucketStoryAudio.bucketName,
+        AUDIO_BUCKET_URL: bucketStoryAudio.urlForObject(""),
+      },
+    });
+    const lamdaStoryGetByIdDataSource = api.addLambdaDataSource("LambdaStoryGetByIdDataSource", lambdaStoryGetById);
+    lamdaStoryGetByIdDataSource.createResolver("Query-getStoryById", {
+      typeName: "Query",
+      fieldName: "getStoryById",
+    });
+    dynamoDbTableStory.grantReadData(lambdaStoryGetById);
+    bucketStoryText.grantRead(lambdaStoryGetById);
+    bucketStoryTranslation.grantRead(lambdaStoryGetById);
+    bucketStoryAudio.grantRead(lambdaStoryGetById);
+
+    const lambdaSentenceExplanation = new LambdaNodeJs.NodejsFunction(this, "LambdaSentenceExplanation", {
+      runtime: Lambda.Runtime.NODEJS_18_X,
+      entry: `${PWD_API}/sentence-explanation.ts`,
+      handler: "handler",
+      depsLockFilePath: "yarn.lock",
+      timeout: Duration.seconds(30),
+      environment: {
+        OPENAI_API_KEY_SECRET_NAME: "openai-apikey",
+        OPENAI_API_KEY_SECRET_REGION: props?.env?.region + "",
+      },
+    });
+    lambdaSentenceExplanation.addToRolePolicy(
+      new IAM.PolicyStatement({
+        actions: ["secretsmanager:GetSecretValue"],
+        resources: ["*"],
+      })
+    );
+
+    const lamdaStoryCreateDataSource = api.addLambdaDataSource("LambdaStoryCreateDataSource", lambdaStoryCreate);
+    lamdaStoryCreateDataSource.createResolver("Mutation-CreateStory", {
+      typeName: "Mutation",
+      fieldName: "createStory",
+    });
+    dynamoDbTableStory.grantFullAccess(lambdaStoryCreate);
+
+    const lamdaStoryStatusDataSource = api.addLambdaDataSource("LambdaStoryStatusDataSource", lambdaStoryStatus);
+    lamdaStoryStatusDataSource.createResolver("Query-GetStoryStatus", {
+      typeName: "Query",
+      fieldName: "getStoryStatus",
+    });
+    dynamoDbTableStory.grantReadData(lambdaStoryStatus);
+
+    const lambdaSentenceExplanationDataSource = api.addLambdaDataSource(
+      "LambdaSentenceExplanationDataSource",
+      lambdaSentenceExplanation
+    );
+    lambdaSentenceExplanationDataSource.createResolver("Query-GetSentenceExplanation", {
+      typeName: "Query",
+      fieldName: "getSentenceExplanation",
+    });
   }
 }
