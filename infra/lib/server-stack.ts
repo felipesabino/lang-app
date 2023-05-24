@@ -207,7 +207,7 @@ export class ServerStack extends Stack {
       handler: "handler",
       depsLockFilePath: "yarn.lock",
       environment: {
-        SES_FROM_ADDRESS: "langapp@sabino.me",
+        SES_FROM_ADDRESS: "lang-app@sabino.me",
       },
     });
     lambdaAuthCreateAuthChallenge.addToRolePolicy(
@@ -255,14 +255,19 @@ export class ServerStack extends Stack {
       role: roleAuthLambdaAutPostAuthentication,
     });
 
-    const authUserPool = new Cognito.UserPool(this, "AuthUserPool", {
-      userPoolName: "AuthUserPool",
+    const authUserPool = new Cognito.UserPool(this, "AppAuthUserPool", {
+      userPoolName: "AppAuthUserPool",
       passwordPolicy: {
         minLength: 8,
         requireLowercase: false,
         requireUppercase: false,
         requireDigits: false,
         requireSymbols: false,
+      },
+      selfSignUpEnabled: true,
+      signInAliases: {
+        email: true,
+        username: false,
       },
       mfa: Cognito.Mfa.OFF,
       lambdaTriggers: {
@@ -322,7 +327,6 @@ export class ServerStack extends Stack {
       generateSecret: false,
       authFlows: {
         custom: true,
-        userSrp: true,
       },
     });
 

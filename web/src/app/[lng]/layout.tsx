@@ -14,6 +14,9 @@ import { createAuthLink } from "aws-appsync-auth-link";
 import { dir } from "i18next";
 import i18n, { languages, i18nProps } from "@/app/i18n";
 import { useEffect } from "react";
+import { Auth } from "aws-amplify";
+import "@aws-amplify/ui-react/styles.css";
+import { AuthProvider } from "@/authentication/auth-context";
 
 export async function generateStaticParams() {
   return languages.map((lng) => ({ lng }));
@@ -39,8 +42,8 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
       url,
       region,
       auth: {
-        type: "API_KEY",
-        apiKey: process.env.NEXT_PUBLIC_API_KEY || "",
+        type: "AMAZON_COGNITO_USER_POOLS",
+        jwtToken: async () => (await Auth.currentSession()).getIdToken().getJwtToken(),
       },
     }),
     createHttpLink({ uri: url }),
@@ -66,10 +69,12 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
     <html lang={lng} dir={dir(lng)}>
       <body className="selection:bg-highlight">
         <div>
-          <ApolloProvider client={client}>
-            <UserHeader pageTitle={i18n.t("app.name")} name="The User" />
-            {children}
-          </ApolloProvider>
+          <AuthProvider>
+            <ApolloProvider client={client}>
+              <UserHeader pageTitle={i18n.t("app.name")} name="The User" />
+              {children}
+            </ApolloProvider>
+          </AuthProvider>
         </div>
       </body>
     </html>
