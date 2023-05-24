@@ -3,8 +3,6 @@ import { CognitoUser } from "amazon-cognito-identity-js";
 
 export type AuthenticationMachineContext = {
   authDetails?: AuthDetails;
-  email?: string;
-  name?: string;
 };
 
 export type AuthDetails = CognitoUser & { challengeParam: { email: string } };
@@ -18,7 +16,8 @@ export type AuthenticationMachineEvent =
   | { type: "REPORT_CHALLENGE_OK"; authDetails: AuthDetails }
   | { type: "ANSWER_CHALLENGE"; challenge: string }
   | { type: "SIGN_UP"; email: string; name: string }
-  | { type: "REPORT_SIGNED_UP" };
+  | { type: "REPORT_SIGNED_UP" }
+  | { type: "REPORT_NEED_SIGN_UP" };
 
 const authenticationMachine = createMachine<AuthenticationMachineContext, AuthenticationMachineEvent>(
   {
@@ -58,6 +57,7 @@ const authenticationMachine = createMachine<AuthenticationMachineContext, Authen
         },
         on: {
           REPORT_WAITING_CHALLENGE: "waitingChallenge",
+          REPORT_NEED_SIGN_UP: "waitingSignUp",
         },
       },
       loggedOut: {
@@ -91,6 +91,11 @@ const authenticationMachine = createMachine<AuthenticationMachineContext, Authen
           LOG_IN: "loggingIn",
         },
       },
+      waitingSignUp: {
+        on: {
+          SIGN_UP: "signingUp",
+        },
+      },
       signingUp: {
         invoke: {
           src: "signUp",
@@ -110,15 +115,11 @@ const authenticationMachine = createMachine<AuthenticationMachineContext, Authen
         }
         return {
           authDetails: event.authDetails,
-          email: event.authDetails.challengeName,
-          name: event.authDetails.challengeName,
         };
       }),
       clearUserDetailsFromContext: assign((context, event) => {
         return {
           authDetails: undefined,
-          email: undefined,
-          challenge: undefined,
         };
       }),
     },

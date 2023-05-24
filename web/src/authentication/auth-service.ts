@@ -14,8 +14,14 @@ type CustomCognitoUser = AuthDetails;
 export class AuthService {
   private cognitoUser: CustomCognitoUser | undefined;
 
+  public USER_DO_NOT_EXIST = "UserNotFoundException";
+
   public async signIn(email: string) {
-    this.cognitoUser = await Auth.signIn(email);
+    try {
+      this.cognitoUser = await Auth.signIn(email);
+    } catch (e: any) {
+      throw e;
+    }
   }
 
   public async signOut() {

@@ -1,8 +1,7 @@
 import { useMachine } from "@xstate/react";
-import { sign } from "crypto";
-import { matches } from "lodash";
+import { State } from "xstate";
 import { createContext, useState } from "react";
-import authenticationMachine, { AuthenticationMachineContext } from "./auth-machine";
+import authenticationMachine, { AuthenticationMachineContext, AuthenticationMachineEvent } from "./auth-machine";
 import { AuthService } from "./auth-service";
 import { Amplify } from "aws-amplify";
 import awsExports from "@/aws-exports";
@@ -15,22 +14,13 @@ export interface AuthContextInterface {
   answerChallenge: (challenge: string) => void;
   signUp: (email: string, name: string) => void;
 }
-export type AUTH_STATES =
-  | "checkingIfLoggedIn"
-  | "loggedIn"
-  | "loggingIn"
-  | "loggedOut"
-  | "checkingChallenge"
-  | "waitingChallenge"
-  | "signingUp";
-
-export interface AuthState {
-  matches: (state: AUTH_STATES) => boolean;
-}
-
-export const AuthContext = createContext<{ state: AuthState; context: AuthenticationMachineContext } | undefined>(
-  undefined
-);
+export const AuthContext = createContext<
+  | {
+      state: State<AuthenticationMachineContext, AuthenticationMachineEvent, any, any, any>;
+      context: AuthenticationMachineContext;
+    }
+  | undefined
+>(undefined);
 export const AuthDispatcherContext = createContext<AuthContextInterface | undefined>(undefined);
 
 //@ts-expect-error
@@ -48,6 +38,7 @@ export const AuthProvider = ({ children }) => {
   const [authService] = useState(new AuthService());
   const [machine] = useState(authenticationMachine.withContext({}));
   const [state, send] = useMachine(machine, {
+    devTools: true,
     actions: {
       logOut: async (context: AuthenticationMachineContext) => {
         await authService.signOut();
@@ -65,8 +56,16 @@ export const AuthProvider = ({ children }) => {
       },
       signIn: async (_, event) => {
         if (event.type === "LOG_IN") {
-          await authService.signIn(event.email);
-          send({ type: "REPORT_WAITING_CHALLENGE" });
+          try {
+            await authService.signIn(event.email);
+            send({ type: "REPORT_WAITING_CHALLENGE" });
+          } catch (e: any) {
+            if (e.code === authService.USER_DO_NOT_EXIST) {
+              send({ type: "REPORT_NEED_SIGN_UP" });
+            } else {
+              throw e;
+            }
+          }
         }
       },
       answerChallenge: async (_, event) => {
