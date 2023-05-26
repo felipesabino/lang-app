@@ -1,5 +1,7 @@
 "use client";
 import { useTranslation } from "react-i18next";
+import { useContext, useState } from "react";
+import { AuthContext, AuthDispatcherContext } from "@/authentication/auth-context";
 
 const Home: React.FC = () => {
   const { t, i18n } = useTranslation();

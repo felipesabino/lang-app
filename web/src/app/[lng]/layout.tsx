@@ -1,6 +1,5 @@
 "use client";
 
-import "../globals.css";
 import { UserHeader } from "./components/user-header";
 import {
   ApolloProvider,
@@ -11,8 +10,10 @@ import {
   defaultDataIdFromObject,
 } from "@apollo/client";
 import { createAuthLink } from "aws-appsync-auth-link";
-import { dir } from "i18next";
 import i18n, { languages, i18nProps } from "@/app/i18n";
+import { Auth } from "aws-amplify";
+import "@aws-amplify/ui-react/styles.css";
+import { AuthProvider } from "@/authentication/auth-context";
 import { useEffect } from "react";
 
 export async function generateStaticParams() {
@@ -24,8 +25,6 @@ interface RootLayoutProps extends i18nProps {
 }
 
 export default function RootLayout({ children, params: { lng } }: RootLayoutProps) {
-  // TODO: eventually this shoud be loaded from the user information when logging in
-
   //if(i18n.language !== lng)
   useEffect(() => {
     i18n.changeLanguage(lng);
@@ -39,8 +38,8 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
       url,
       region,
       auth: {
-        type: "API_KEY",
-        apiKey: process.env.NEXT_PUBLIC_API_KEY || "",
+        type: "AMAZON_COGNITO_USER_POOLS",
+        jwtToken: async () => (await Auth.currentSession()).getIdToken().getJwtToken(),
       },
     }),
     createHttpLink({ uri: url }),
@@ -50,6 +49,7 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
     link,
     cache: new InMemoryCache({
       dataIdFromObject(responseObject) {
+        console.log(["log check", responseObject]);
         switch (responseObject.__typename) {
           case "Story":
             return `Story:${responseObject.storyId}`;
@@ -60,18 +60,14 @@ export default function RootLayout({ children, params: { lng } }: RootLayoutProp
     }),
   });
 
-  // i18n
-
   return (
-    <html lang={lng} dir={dir(lng)}>
-      <body className="selection:bg-highlight">
-        <div>
-          <ApolloProvider client={client}>
-            <UserHeader pageTitle={i18n.t("app.name")} name="The User" />
-            {children}
-          </ApolloProvider>
-        </div>
-      </body>
-    </html>
+    <div>
+      <AuthProvider>
+        <ApolloProvider client={client}>
+          <UserHeader pageTitle={i18n.t("app.name")} name="The User" />
+          {children}
+        </ApolloProvider>
+      </AuthProvider>
+    </div>
   );
 }

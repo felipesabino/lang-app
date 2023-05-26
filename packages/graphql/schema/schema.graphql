@@ -8,12 +8,12 @@ scalar AWSURL
 scalar AWSPhone
 scalar AWSIPAddress
 
-enum StoryStatusType {
+enum StoryStatusType @aws_api_key @aws_cognito_user_pools {
   GENERATING
   COMPLETED
 }
 
-type StoryStatus {
+type StoryStatus @aws_api_key @aws_cognito_user_pools {
   storyId: ID!
   status: StoryStatusType!
   generationRequestDate: AWSTimestamp!
@@ -56,12 +56,12 @@ enum GrammarOptions {
   FUTURE_CONTINUOUS
 }
 
-type LanguageOutput {
+type LanguageOutput @aws_api_key @aws_cognito_user_pools {
   source: SupportedLanguages!
   target: SupportedLanguages!
 }
 
-input LanguageInput {
+input LanguageInput @aws_api_key @aws_cognito_user_pools  {
   source: SupportedLanguages!
   target: SupportedLanguages!
 }
@@ -74,7 +74,7 @@ interface StoryOptions {
   specificWords: [String!]
 }
 
-type StoryCreationMetadata implements StoryOptions {
+type StoryCreationMetadata implements StoryOptions @aws_api_key @aws_cognito_user_pools {
   theme: StoryTheme!
   language: LanguageOutput!
   narrationStyle: NarrationStyle!
@@ -88,7 +88,7 @@ enum AudioSpeed {
   NORMAL
 }
 
-type SpeechMark {
+type SpeechMark @aws_api_key @aws_cognito_user_pools {
   time: Int!
   type: String!
   start: Int!
@@ -96,19 +96,19 @@ type SpeechMark {
   value: String!
 }
 
-type StoryAudioAsset {
+type StoryAudioAsset @aws_api_key @aws_cognito_user_pools {
   url: AWSURL!
   speed: AudioSpeed!
   speechMarks: [SpeechMark!]!
 }
 
-type StoryAssets {
+type StoryAssets @aws_api_key @aws_cognito_user_pools {
   text: String!
   translation: String!
   audio: [StoryAudioAsset!]!
 }
 
-type Story {
+type Story @aws_api_key @aws_cognito_user_pools {
   storyId: ID!
   creationMetadata: StoryCreationMetadata!
   generationRequestDate: AWSTimestamp!
@@ -117,23 +117,23 @@ type Story {
   assets: StoryAssets!
 }
 
-type SentenceExplanation {
+type SentenceExplanation @aws_api_key @aws_cognito_user_pools {
   sentence: String!
   explanation: String!
 }
 
-input SentenceExplanationInput {
+input SentenceExplanationInput @aws_api_key @aws_cognito_user_pools  {
   sentence: String!
   language: LanguageInput!
 }
 
-type Query {
+type Query @aws_api_key @aws_cognito_user_pools {
   getStoryById(storyId: ID!): Story
   getStoryStatus(storyId: ID!): StoryStatus
   getSentenceExplanation(input: SentenceExplanationInput!): SentenceExplanation
 }
 
-input CreateStoryInput {
+input CreateStoryInput @aws_api_key @aws_cognito_user_pools  {
   theme: StoryTheme!
   language: LanguageInput!
   narrationStyle: NarrationStyle!
@@ -142,10 +142,10 @@ input CreateStoryInput {
   voice: String!
 }
 
-type CreateStoryOutput {
+type CreateStoryOutput @aws_api_key @aws_cognito_user_pools {
   storyId: ID!
 }
 
-type Mutation {
+type Mutation @aws_api_key @aws_cognito_user_pools {
   createStory(story: CreateStoryInput!): CreateStoryOutput!
 }

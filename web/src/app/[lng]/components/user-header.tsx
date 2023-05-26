@@ -1,4 +1,6 @@
+import { AuthContext } from "@/authentication/auth-context";
 import { useTranslation } from "react-i18next";
+import { useContext } from "react";
 
 export interface UserHeaderProps {
   pageTitle: string;
@@ -8,6 +10,7 @@ export interface UserHeaderProps {
 
 export const UserHeader: React.FC<UserHeaderProps> = ({ pageTitle, name, profilePicture }) => {
   const { t, i18n } = useTranslation();
+  const authContext = useContext(AuthContext);
 
   return (
     <header className="sticky top-0 flex flex-wrap sm:justify-start sm:flex-nowrap z-50 w-full bg-white text-sm py-4 border-b-2">
@@ -19,16 +22,25 @@ export const UserHeader: React.FC<UserHeaderProps> = ({ pageTitle, name, profile
           <a className="font-medium text-blue-500" href={`/${i18n.language}/`} aria-current="page">
             {t("header.home")}
           </a>
-          <a className="font-medium text-blue-500" href={`/${i18n.language}/new`} aria-current="page">
-            {t("header.newStory")}
-          </a>
-          <a className="font-medium text-blue-500" href={`/${i18n.language}/`} aria-current="page">
-            <img
-              className="inline-block h-[2.375rem] w-[2.375rem] rounded-full ring-2 ring-white"
-              src="https://1.gravatar.com/avatar/bab3aee31aebf9ee9cf0ab89ed513b2f"
-              alt="Image Description"
-            />
-          </a>
+          {authContext?.state.matches("loggedIn") && (
+            <>
+              <a className="font-medium text-blue-500" href={`/${i18n.language}/new`} aria-current="page">
+                {t("header.newStory")}
+              </a>
+              <a className="font-medium text-blue-500" href={`/${i18n.language}/`} aria-current="page">
+                <img
+                  className="inline-block h-[2.375rem] w-[2.375rem] rounded-full ring-2 ring-white"
+                  src="https://1.gravatar.com/avatar/bab3aee31aebf9ee9cf0ab89ed513b2f"
+                  alt="Image Description"
+                />
+              </a>
+            </>
+          )}
+          {!authContext?.state.matches("loggedIn") && (
+            <a className="font-medium text-blue-500" href={`/${i18n.language}/login`} aria-current="page">
+              Login
+            </a>
+          )}
         </div>
       </nav>
     </header>
