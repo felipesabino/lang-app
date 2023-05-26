@@ -25,7 +25,7 @@ export default function Waiting(context: { params: { storyId: string } }) {
     rootMachine.withContext({
       storyId,
       lastStatus: StoryStatusType.Generating,
-      timeOutInMs: 30 * 1000,
+      timeOutInMs: 60 * 1000,
       timestamp: +new Date(),
     })
   );

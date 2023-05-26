@@ -1,5 +1,6 @@
 import { SupportedLanguages } from "@langapp/graphql";
 
+
 export const normalizeLanguageCode = (language: SupportedLanguages): string => {
   switch (language) {
     case SupportedLanguages.En:

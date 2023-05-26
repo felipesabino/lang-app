@@ -10,15 +10,12 @@ import {
   defaultDataIdFromObject,
 } from "@apollo/client";
 import { createAuthLink } from "aws-appsync-auth-link";
-import i18n, { languages, i18nProps } from "@/app/i18n";
+import i18n, { i18nProps } from "@/app/i18n";
 import { Auth } from "aws-amplify";
 import "@aws-amplify/ui-react/styles.css";
 import { AuthProvider } from "@/authentication/auth-context";
 import { useEffect } from "react";
 
-export async function generateStaticParams() {
-  return languages.map((lng) => ({ lng }));
-}
 
 interface RootLayoutProps extends i18nProps {
   children: React.ReactNode;

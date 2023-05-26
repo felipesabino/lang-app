@@ -18,6 +18,7 @@ import {
   StoryTheme,
 } from "@/graphql/types-and-hooks";
 import "./components/cutom-block-voices";
+import { normalizeLanguageTranslation } from "@/app/i18n/normalization";
 
 registerCoreBlocks();
 
@@ -46,7 +47,7 @@ const NewStoryForm = () => {
         variables: {
           voice: answers.voice.value as TVoices,
           target: answers.language.value[0] as SupportedLanguages,
-          source: SupportedLanguages.En,
+          source: normalizeLanguageTranslation(i18n.language),
           theme: isCustomized ? answers.theme.value[0] : StoryTheme.Random,
           narrationStyle: isCustomized ? answers["narration-style"].value[0] : "",
           specificWords: isCustomized ? answers["specific-words"].value : "",
