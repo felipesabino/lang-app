@@ -16,10 +16,11 @@ export function getRequest(props: StoryCreationProps): CreateChatCompletionReque
   const grammarOptionsPrompt = !grammarOptions ? "" : `Prefer using only ${grammarOptions} as grammar options.`;
   const wordsOrSentencesPrompt = !wordsOrSentences ? "" : `Include these words or sentences: ${wordsOrSentences}.`;
 
-  const prompt = `Your task it to create a story for language learners using ${language} language.
+  const prompt = `Your task it to create a story for language learners.
   Use ${theme} as theme. Use a ${narrationStyle} narration style.
   ${grammarOptionsPrompt} ${wordsOrSentencesPrompt}
-  Create at most 9 paragraphs. Return only the story text, do not include titles or any other text.`;
+  Create at most 9 paragraphs. Return only the story text, do not include titles or any other text.
+  The story must be in ${language} language`;
 
   return {
     model: "gpt-3.5-turbo",
@@ -30,7 +31,7 @@ export function getRequest(props: StoryCreationProps): CreateChatCompletionReque
       },
       { role: "user", content: prompt },
     ],
-    temperature: 0,
+    temperature: 0.8,
     max_tokens: 2048,
   };
 }
