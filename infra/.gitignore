@@ -13,3 +13,6 @@ cdk.out
 
 # this is replaced when CDK command is executed on root workspace
 yarn.lock
+
+# cdk-dia
+diagram.*

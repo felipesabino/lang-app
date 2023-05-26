@@ -21,7 +21,8 @@
     "precdk": "cp ./yarn.lock ./infra/yarn.lock && yarn generate",
     "precdk:production": "cp ./yarn.lock ./infra/yarn.lock && yarn generate",
     "preweb": "yarn generate",
-    "generate": "yarn --cwd packages/graphql generate"
+    "generate": "yarn --cwd packages/graphql generate",
+    "cdk-dia": "yarn --cwd infra cdk-dia --collapse false"
   },
   "devDependencies": {
     "prettier": "^2.8.8"
