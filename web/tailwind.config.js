@@ -1,13 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    './src/pages/**/*.{js,ts,jsx,tsx}',
     './src/components/**/*.{js,ts,jsx,tsx}',
     './src/app/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {
-
       colors: {
         reading:  '#3a4649',
         highlight: '#e6fc88',
@@ -46,5 +44,6 @@ module.exports = {
     require("@tailwindcss/forms")({
       strategy: 'class', // only generate classes
     }),
+    require('@tailwindcss/typography'),
   ],
 }
