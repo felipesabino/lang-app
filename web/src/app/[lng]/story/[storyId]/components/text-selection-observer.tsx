@@ -64,6 +64,7 @@ export const TextSelectionObserver: React.FC<TextSelectionObserverProps> = ({ ch
                 }}
               >
                 <button
+                  className="not-prose"
                   onClick={() => {
                     if (textContent) handleClick(textContent);
                   }}

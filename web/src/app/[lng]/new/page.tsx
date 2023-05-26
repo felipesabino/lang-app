@@ -67,11 +67,14 @@ const NewStoryForm = () => {
         formId={1}
         formObj={{
           hiddenFields: {},
-          blocks: getFormSteps({
-            //@ts-ignore
-            shouldStoryBeCustomized: shouldStoryBeCustomized?.includes("Yes"),
-            currentTargetLanguage: currentTargetLanguage ? (currentTargetLanguage as any[])[0].toString() : "",
-          }),
+          blocks: getFormSteps(
+            {
+              //@ts-ignore
+              shouldStoryBeCustomized: shouldStoryBeCustomized?.includes("Yes"),
+              currentTargetLanguage: currentTargetLanguage ? (currentTargetLanguage as any[])[0].toString() : "",
+            },
+            t
+          ),
           settings: {
             animationDirection: "horizontal",
             disableWheelSwiping: false,

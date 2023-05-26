@@ -1,15 +1,17 @@
 import { FormBlock, FormBlocks } from "@quillforms/types/build-types";
 import { VoiceEnglish, VoiceFrench, VoiceItalian, VoicePortuguese } from "@/graphql/voices";
 import { StoryTheme, GrammarOptions, SupportedLanguages, NarrationStyle } from "@/graphql/types-and-hooks";
-import { useTranslation } from "react-i18next";
+import { TFunction } from "i18next";
 
 export interface FormStepsProps {
   shouldStoryBeCustomized: boolean;
   currentTargetLanguage: string;
 }
 
-export const getFormSteps = (options: FormStepsProps): FormBlocks => {
-  const { t, i18n } = useTranslation();
+export const getFormSteps = (
+  options: FormStepsProps,
+  t: TFunction<"translation", undefined, "translation">
+): FormBlocks => {
   const blocks = [
     {
       name: "welcome-screen",
