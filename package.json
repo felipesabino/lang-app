@@ -18,6 +18,7 @@
     "cdk:production": "yarn --cwd infra cdk:production",
     "web": "yarn --cwd web dev",
     "web:export": "yarn --cwd web export",
+    "web:build": "yarn --cwd web build",
     "precdk": "cp ./yarn.lock ./infra/yarn.lock && yarn generate",
     "precdk:production": "cp ./yarn.lock ./infra/yarn.lock && yarn generate",
     "preweb": "yarn generate",
