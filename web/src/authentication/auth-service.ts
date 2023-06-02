@@ -1,5 +1,4 @@
 import { Auth } from "aws-amplify";
-const CUSTOM_AUTH_TTL = 5 * 60 * 1000; // Milliseconds
 import { AuthDetails } from "./auth-machine";
 
 interface CustomAuthSession {
@@ -9,6 +8,7 @@ interface CustomAuthSession {
   expiresAt: number;
 }
 
+const CUSTOM_AUTH_TTL = 5 * 60 * 1000; // Milliseconds
 type CustomCognitoUser = AuthDetails;
 
 export class AuthService {
