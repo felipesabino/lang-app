@@ -15,12 +15,16 @@
     "packages/*"
   ],
   "scripts": {
-    "cdk": "yarn --cwd infra cdk",
-    "cdk:production": "yarn --cwd infra cdk:production",
+    "infra:synth": "yarn web:build && yarn --cwd infra cdk synth",
+    "infra:diff": "yarn --cwd infra cdk diff",
+    "infra:deploy": "yarn --cwd infra cdk deploy",
+    "infra:synth:production": "yarn web:build:production && yarn --cwd infra cdk synth",
+    "infra:diff:production": "yarn --cwd infra cdk diff",
+    "infra:deploy:production": "yarn --cwd infra cdk:production deploy",
+    "cdk": "yarn web:build && yarn --cwd infra cdk",
+    "cdk:production": "yarn web:build:production && yarn --cwd infra cdk:production",
     "web": "yarn --cwd web start",
     "web:build": "yarn --cwd web build",
-    "precdk": "cp ./yarn.lock ./infra/yarn.lock && yarn generate",
-    "precdk:production": "cp ./yarn.lock ./infra/yarn.lock && yarn generate",
     "preweb": "yarn generate",
     "generate": "yarn --cwd packages/graphql generate",
     "cdk-dia": "yarn --cwd infra cdk-dia --collapse false"

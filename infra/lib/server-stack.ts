@@ -1,5 +1,5 @@
 import * as path from "path";
-import { Stack, StackProps, Expiration, Duration, CfnOutput } from "aws-cdk-lib";
+import { Stack, StackProps, Expiration, Duration, CfnOutput, RemovalPolicy } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as AppSync from "aws-cdk-lib/aws-appsync";
 import * as LambdaNodeJs from "aws-cdk-lib/aws-lambda-nodejs";
@@ -7,9 +7,11 @@ import * as Lambda from "aws-cdk-lib/aws-lambda";
 import * as Cognito from "aws-cdk-lib/aws-cognito";
 import * as DynamoDB from "aws-cdk-lib/aws-dynamodb";
 import * as S3 from "aws-cdk-lib/aws-s3";
+import * as S3Deploy from 'aws-cdk-lib/aws-s3-deployment'
 import * as StepFunction from "aws-cdk-lib/aws-stepfunctions";
 import * as StepFunctionTasks from "aws-cdk-lib/aws-stepfunctions-tasks";
 import * as IAM from "aws-cdk-lib/aws-iam";
+import * as Cloudfront from "aws-cdk-lib/aws-cloudfront";
 import { StoryStatusType } from "@langapp/graphql";
 
 export class ServerStack extends Stack {
@@ -24,6 +26,7 @@ export class ServerStack extends Stack {
     const PWD_WORKFLOW = `${PWD_SERVER}/workflows`;
     const PWD_GRAPHQL = `${PWD_ROOT}/packages/graphql`;
     const PWD_AUTH = `${PWD_SERVER}/authentication`;
+    const PWD_WEB = `${PWD_ROOT}/web`;
 
     /*
       Resources (Tables, Buckets, etc)
@@ -465,5 +468,37 @@ export class ServerStack extends Stack {
       typeName: "Query",
       fieldName: "getSentenceExplanation",
     });
+
+    // S3
+    const bucketSPAPublic = new S3.Bucket(this, "BucketSPAPublic", {
+      bucketName: `langapp-public${ASSET_SUFFIX}`,
+      publicReadAccess: true,
+      blockPublicAccess: S3.BlockPublicAccess.BLOCK_ACLS,
+      enforceSSL: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      websiteIndexDocument: "index.html"
+    });
+
+    const cloudfrontWebDistribution = new Cloudfront.CloudFrontWebDistribution(this, 'CDKCRAStaticWebDistribution', {
+      originConfigs: [{
+        s3OriginSource: {
+          s3BucketSource: bucketSPAPublic,
+        },
+        behaviors: [ { isDefaultBehavior: true }],
+      }],
+    });
+
+    new CfnOutput(this, "Cloudfront URL", {
+      value: `https://${cloudfrontWebDistribution.distributionDomainName}`,
+    });
+
+    // Deployment
+    const bucketSPADeploy = new S3Deploy.BucketDeployment(this, "BucketSPADeploy", {
+      sources: [S3Deploy.Source.asset(`${PWD_WEB}/build`)],
+      destinationBucket: bucketSPAPublic,
+      distribution: cloudfrontWebDistribution,
+      distributionPaths: ['/index.html', '/build/static/js/*.js', '/build/static/js/*.map', '/build/static/css/*.css']
+    });
+
   }
 }

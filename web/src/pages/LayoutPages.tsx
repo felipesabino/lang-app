@@ -41,7 +41,6 @@ export const LayoutPages = () => {
     link,
     cache: new InMemoryCache({
       dataIdFromObject(responseObject) {
-        console.log(["log check", responseObject]);
         switch (responseObject.__typename) {
           case "Story":
             return `Story:${responseObject.storyId}`;

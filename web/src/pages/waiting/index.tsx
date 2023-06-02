@@ -14,7 +14,6 @@ export const Waiting = () => {
 
   useEffect(() => {
     if (go) {
-      console.log("completed");
       navigate(`/${i18n.language}/story/${storyId}`);
     }
   }, [go]);
@@ -25,7 +24,7 @@ export const Waiting = () => {
     rootMachine.withContext({
       storyId: storyId as string,
       lastStatus: StoryStatusType.Generating,
-      timeOutInMs: 60 * 1000,
+      timeOutInMs: 3 * 60 * 1000,
       timestamp: +new Date(),
     })
   );
@@ -39,7 +38,6 @@ export const Waiting = () => {
     },
     services: {
       fetch: (context, event) => {
-        console.log("fetching");
         return client
           .query<GetStoryStatusQuery>({
             query: GetStoryStatusDocument,

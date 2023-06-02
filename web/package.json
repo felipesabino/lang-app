@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.7.15",
+    "@aws-cdk/aws-cloudfront": "^1.203.0",
+    "@aws-cdk/aws-s3-deployment": "^1.203.0",
     "@quillforms/react-renderer-utils": "^5.5.0",
     "@quillforms/renderer-core": "^5.4.0",
     "@quillforms/types": "^3.0.15",

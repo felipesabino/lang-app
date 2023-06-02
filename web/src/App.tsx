@@ -1,6 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { Routes, Route, Link } from "react-router-dom";
 import { Layout } from "./Layout";
 import { _404 } from "./_404";
 import { LayoutPages } from "./pages";
@@ -64,26 +63,23 @@ function App() {
 }
 
 function Home() {
-  const { t, i18n } = useTranslation();
-
   return (
     <div className="grid gap-4 place-content-center h-screen w-full">
-      ({i18n.language})
-      <ul className="flex flex-col gap-4 list-none underline cursor-pointer">
+      <ul className="flex flex-col gap-4 list-none underline cursor-pointer text-reading md:text-lg lg:text-xl">
         <li>
-          <a href="/en">English</a>
+          <Link to="/en/new">Do you speak English?</Link>
         </li>
         <li>
-          <a href="/fr">Français</a>
+          <Link to="/fr/new">Parlez-vous Français?</Link>
         </li>
         <li>
-          <a href="/pt">Português</a>
+          <Link to="/pt/new">Você fala Português?</Link>
         </li>
         <li>
-          <a href="/es">Español</a>
+          <Link to="/es/new">¿Hablas Español?</Link>
         </li>
         <li>
-          <a href="/it">Italiano</a>
+          <Link to="/it/new">Parli Italiano?</Link>
         </li>
       </ul>
     </div>

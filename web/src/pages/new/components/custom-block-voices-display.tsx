@@ -21,10 +21,14 @@ export const MyCustomBlockDisplay = (props: any) => {
     if (audio) {
       audio.pause();
       audio.src = audioUrl;
-      audio.play();
+      setTimeout(() => {
+        audio.play();
+      }, 300);
     } else {
       const tmp = new Audio(audioUrl);
-      tmp.play();
+      setTimeout(() => {
+        tmp.play();
+      }, 300);
       setAudio(tmp);
     }
   };
@@ -80,6 +84,7 @@ export const MyCustomBlockDisplay = (props: any) => {
                     timer = setTimeout(() => {
                       setIsAnswered(true);
                       next();
+
                       audio?.pause();
                     }, 500);
                   } else {
