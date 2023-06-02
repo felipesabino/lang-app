@@ -10,14 +10,14 @@
   "workspaces": [
     "server",
     "web",
+    "web-spa",
     "infra",
     "packages/*"
   ],
   "scripts": {
     "cdk": "yarn --cwd infra cdk",
     "cdk:production": "yarn --cwd infra cdk:production",
-    "web": "yarn --cwd web dev",
-    "web:export": "yarn --cwd web export",
+    "web": "yarn --cwd web start",
     "web:build": "yarn --cwd web build",
     "precdk": "cp ./yarn.lock ./infra/yarn.lock && yarn generate",
     "precdk:production": "cp ./yarn.lock ./infra/yarn.lock && yarn generate",

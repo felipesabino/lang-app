@@ -1,29 +1,24 @@
 {
-  "name": "my-project",
+  "name": "web-spa",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "export": "next build && next export"
-  },
   "dependencies": {
-    "@apollo/client": "^3.7.14",
-    "@aws-amplify/ui-react": "^4.6.2",
-    "@langapp/graphql": "1.0.0",
-    "@quillforms/react-renderer-utils": "^5.4.0",
-    "@quillforms/renderer-core": "^5.3.0",
-    "@quillforms/types": "^3.0.14",
+    "@apollo/client": "^3.7.15",
+    "@quillforms/react-renderer-utils": "^5.5.0",
+    "@quillforms/renderer-core": "^5.4.0",
+    "@quillforms/types": "^3.0.15",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.9",
-    "@types/node": "18.15.11",
-    "@types/react": "18.0.33",
-    "@types/react-dom": "18.0.11",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.34",
+    "@types/react": "^18.2.7",
+    "@types/react-dom": "^18.2.4",
     "@xstate/react": "^3.2.2",
-    "autoprefixer": "10.4.14",
-    "aws-amplify": "^5.2.2",
+    "autoprefixer": "^9.8.6",
+    "aws-amplify": "^5.2.4",
     "aws-appsync": "^4.1.9",
     "aws-appsync-auth-link": "^3.0.7",
     "change-case": "^4.1.2",
@@ -32,20 +27,43 @@
     "i18next": "^22.5.0",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
-    "next": "13.4.1",
-    "openai": "^3.2.1",
-    "postcss": "8.4.21",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
+    "postcss": "^8.4.24",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-i18next": "^12.3.1",
-    "tailwindcss": "^3.3.1",
+    "react-router-dom": "^6.11.2",
+    "react-scripts": "5.0.1",
+    "typescript": "^4.9.5",
+    "web-vitals": "^2.1.4",
     "xstate": "^4.37.2"
   },
+  "scripts": {
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
   "devDependencies": {
-    "@babel/core": "^7.21.8",
-    "eslint": "8.38.0",
-    "eslint-config-next": "13.3.0",
-    "eslint-config-prettier": "^8.8.0",
-    "typescript": "5.0.4"
-  }
+    "@craco/craco": "^7.1.0",
+    "tailwindcss": "^3.3.2"
+  },
+  "cracoConfig": "craco.config.js"
 }
