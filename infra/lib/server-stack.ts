@@ -7,11 +7,14 @@ import * as Lambda from "aws-cdk-lib/aws-lambda";
 import * as Cognito from "aws-cdk-lib/aws-cognito";
 import * as DynamoDB from "aws-cdk-lib/aws-dynamodb";
 import * as S3 from "aws-cdk-lib/aws-s3";
-import * as S3Deploy from 'aws-cdk-lib/aws-s3-deployment'
+import * as S3Deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as StepFunction from "aws-cdk-lib/aws-stepfunctions";
 import * as StepFunctionTasks from "aws-cdk-lib/aws-stepfunctions-tasks";
 import * as IAM from "aws-cdk-lib/aws-iam";
 import * as Cloudfront from "aws-cdk-lib/aws-cloudfront";
+import * as CertificateManager from "aws-cdk-lib/aws-certificatemanager";
+import * as Route53 from "aws-cdk-lib/aws-route53";
+import { CloudFrontTarget } from "aws-cdk-lib/aws-route53-targets";
 import { StoryStatusType } from "@langapp/graphql";
 
 export class ServerStack extends Stack {
@@ -27,6 +30,14 @@ export class ServerStack extends Stack {
     const PWD_GRAPHQL = `${PWD_ROOT}/packages/graphql`;
     const PWD_AUTH = `${PWD_SERVER}/authentication`;
     const PWD_WEB = `${PWD_ROOT}/web`;
+
+    const CERTIFICATE_ARN =
+      ENVIRONMENT === "production"
+        ? "arn:aws:acm:us-east-1:802718048481:certificate/36647640-8f68-4add-8b26-968565e61efc"
+        : "arn:aws:acm:us-east-1:802718048481:certificate/a7e0e314-4ec3-41c1-b40e-b536d8732e52";
+    const DOMAIN = ENVIRONMENT === "production" ? "langapp.io" : "devo.langapp.io";
+    const HOSTED_ZONE_DOMAIN = "langapp.io";
+    const HOSTED_ZONE_ID = "Z0005978M3BE0TUV24KF";
 
     /*
       Resources (Tables, Buckets, etc)
@@ -469,36 +480,58 @@ export class ServerStack extends Stack {
       fieldName: "getSentenceExplanation",
     });
 
-    // S3
+    // Web app
+
     const bucketSPAPublic = new S3.Bucket(this, "BucketSPAPublic", {
       bucketName: `langapp-public${ASSET_SUFFIX}`,
       publicReadAccess: true,
       blockPublicAccess: S3.BlockPublicAccess.BLOCK_ACLS,
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,
-      websiteIndexDocument: "index.html"
+      websiteIndexDocument: "index.html",
     });
 
-    const cloudfrontWebDistribution = new Cloudfront.CloudFrontWebDistribution(this, 'CDKCRAStaticWebDistribution', {
-      originConfigs: [{
-        s3OriginSource: {
-          s3BucketSource: bucketSPAPublic,
+    const certificate = CertificateManager.Certificate.fromCertificateArn(this, "CertificateSPA", CERTIFICATE_ARN);
+
+    const cloudfrontWebDistribution = new Cloudfront.CloudFrontWebDistribution(this, "CDKCRAStaticWebDistribution", {
+      originConfigs: [
+        {
+          s3OriginSource: {
+            s3BucketSource: bucketSPAPublic,
+          },
+          behaviors: [{ isDefaultBehavior: true }],
         },
-        behaviors: [ { isDefaultBehavior: true }],
-      }],
+      ],
+      viewerCertificate: Cloudfront.ViewerCertificate.fromAcmCertificate(certificate, {
+        aliases: [DOMAIN],
+        securityPolicy: Cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
+        sslMethod: Cloudfront.SSLMethod.SNI,
+      }),
+    });
+
+    const route53domain = new Route53.ARecord(this, "Route53Domain", {
+      zone: Route53.HostedZone.fromHostedZoneAttributes(this, "HostedZone", {
+        hostedZoneId: HOSTED_ZONE_ID,
+        zoneName: HOSTED_ZONE_DOMAIN,
+      }),
+      target: Route53.RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontWebDistribution)),
+      recordName: DOMAIN,
+      deleteExisting: true,
     });
 
     new CfnOutput(this, "Cloudfront URL", {
       value: `https://${cloudfrontWebDistribution.distributionDomainName}`,
     });
 
-    // Deployment
+    new CfnOutput(this, "Route53 Domain", {
+      value: `https://${route53domain.domainName}`,
+    });
+
     const bucketSPADeploy = new S3Deploy.BucketDeployment(this, "BucketSPADeploy", {
       sources: [S3Deploy.Source.asset(`${PWD_WEB}/build`)],
       destinationBucket: bucketSPAPublic,
       distribution: cloudfrontWebDistribution,
-      distributionPaths: ['/index.html', '/build/static/js/*.js', '/build/static/js/*.map', '/build/static/css/*.css']
+      distributionPaths: ["/index.html", "/build/static/js/*.js", "/build/static/js/*.map", "/build/static/css/*.css"],
     });
-
   }
 }
