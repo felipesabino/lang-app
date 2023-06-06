@@ -47,6 +47,7 @@ const authenticationMachine = createMachine<AuthenticationMachineContext, Authen
             target: "loggedOut",
           },
         },
+        tags: "isLoggedIn",
       },
       loggingIn: {
         invoke: {

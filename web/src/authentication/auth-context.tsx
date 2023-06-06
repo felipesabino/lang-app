@@ -5,6 +5,7 @@ import authenticationMachine, { AuthenticationMachineContext, AuthenticationMach
 import { AuthService } from "./auth-service";
 import { Amplify } from "aws-amplify";
 import awsExports from "@/aws-exports";
+import { Login } from "@/pages/login";
 
 //TODO: how to get events from loginn page?
 
@@ -104,7 +105,8 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{ state, context: machine.context }}>
       <AuthDispatcherContext.Provider value={{ logIn, logOut, answerChallenge, signUp }}>
-        {children}
+        {state.tags.has("isLoggedIn") && children}
+        {!state.tags.has("isLoggedIn") && <Login />}
       </AuthDispatcherContext.Provider>
     </AuthContext.Provider>
   );

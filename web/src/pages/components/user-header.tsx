@@ -29,7 +29,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({ pageTitle, name, profile
               <Link to={`/${i18n.language}/new`} className="font-medium text-blue-500" aria-current="page">
                 {t("header.newStory")}
               </Link>
-              <Link to={`/${i18n.language}`} className="font-medium text-blue-500" aria-current="page">
+              <Link to={`/${i18n.language}/login`} className="font-medium text-blue-500" aria-current="page">
                 <img
                   className="inline-block h-[2.375rem] w-[2.375rem] rounded-full ring-2 ring-white"
                   src="https://1.gravatar.com/avatar/bab3aee31aebf9ee9cf0ab89ed513b2f"
